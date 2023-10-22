@@ -1,6 +1,8 @@
 const Country = require("../country");
 const Judge = require("../judge");
 
+// Convert to objects | Converting to objects to ensure data / schema integrity
+
 function convertToCountryArray(results) {
     let countriesArray = [];
 
@@ -25,7 +27,21 @@ function convertToJudgeArray(results) {
     return judgesArray;
 }
 
+// Create objects | Creating objects to ensure data / schema integrity
+
+function createJudge(data) {
+    return new Judge(data.name, data.originCountry);
+}
+
+function createCountry(data) {
+    return new Country(data.code, data.name, data.qualified,
+                       data.runningOrder, data.votes, data.totalVotes,
+                       data.flagColors, data.artist, data.song);
+}
+
 module.exports = {
     convertToJudgeArray,
-    convertToCountryArray
+    convertToCountryArray,
+    createJudge,
+    createCountry
 }

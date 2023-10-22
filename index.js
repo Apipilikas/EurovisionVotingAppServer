@@ -4,32 +4,32 @@ const cors = require('cors');
 const http = require('http');
 const server = http.createServer(app);
 const { Server } = require('socket.io');
-const io = new Server(server);
 const DAO = require('./utils/dao');
 
 app.use(cors());
 app.use(express.json());
 
+const io = new Server(3000, {
+    cors: {
+        origin: "*"
+    }
+});
+
 const mongodb = require('./mongodb');
 const Judge = require('./judge');
+const { createJudge, convertToJudgeArray, convertToCountryArray, createCountry } = require('./utils/dataUtils');
 
 const client = mongodb.client;
 const judgeDAO = new DAO.DAO(DAO.Collection.Judge);
+const countryDAO = new DAO.DAO(DAO.Collection.Country);
 
 // Judges
 
 app.get("/judges/all", (req, res) => {
     if (checkContentType(req)) {
-        let judge = new Judge("aggelos15", "GR");
-        //judgeDAO.insert(judge, ["online"]).then(ack => {console.log(ack)});
-        //judgeDAO.update("aggelos15", {originCountry: "POL"})
-        //.then(result => { console.log(result) });
-
-        judgeDAO.delete("aggelos15").then(result => console.log(result));
-
         judgeDAO.getAll()
-        .then(judges => {
-            res.send(judges);
+        .then(results => {
+            res.send(convertToJudgeArray(results));
         });
     }
 });
@@ -42,24 +42,45 @@ app.get("/judges/:name", (req, res) => {
 
 app.post("/judge", (req, res) => {
     if (checkContentType(req)) {
+        let judge = createJudge(req.body);
 
+        judgeDAO.insert(judge, ["online"])
+        .then(ack => {
+            if (ack) res.status(201).send();
+            else res.status(409).send();
+        })
     }
 });
 
 app.put("/judge/:name", (req, res) => {
     if (checkContentType(req)) {
-
+        judgeDAO.update(req.params.name, req.body)
+        .then(ack => {
+            if (ack) res.status(200).send();
+            else res.status(409).send();
+        })
     }
 });
 
 app.delete("/judge/:name", (req, res) => {
-
+    if (checkContentType(req)) {
+        judgeDAO.delete(req.params.name)
+        .then(ack => {
+            if (ack) res.status(204).send();
+            else res.status(409).send();
+        })
+    }
 });
 
 // Countries
 
 app.get("/countries/all", (req, res) => {
-
+    if (checkContentType(req)) {
+        countryDAO.getAll()
+        .then(results => {
+            res.send(convertToCountryArray(results));
+        });
+    }
 });
 
 app.get("/countries/:code", (req, res) => {
@@ -67,24 +88,60 @@ app.get("/countries/:code", (req, res) => {
 });
 
 app.post("/country", (req, res) => {
+    if (checkContentType(req)) {
+        let country = createCountry(req.body);
 
+        countryDAO.insert(country)
+        .then(ack => {
+            if (ack) res.status(201).send();
+            else res.status(409).send();
+        })
+    }
 });
 
 app.put("/country/:code", (req, res) => {
+    if (checkContentType(req)) {
+        countryDAO.update(req.params.code, req.body)
+        .then(ack => {
+            if (ack) res.status(200).send();
+            else res.status(409).send();
+        })
+    }
+});
 
+app.put("/country/vote/:name/:code/:points", (req, res) => {
+    if (checkContentType(req)) {
+        countryDAO.update(req.params.code, req.body)
+        .then(ack => {
+            if (ack) res.status(200).send();
+            else res.status(409).send();
+        })
+    }
 });
 
 app.delete("/country/:code", (req, res) => {
-
+    if (checkContentType(req)) {
+        countryDAO.delete(req.params.code)
+        .then(ack => {
+            if (ack) res.status(204).send();
+            else res.status(409).send();
+        })
+    }
 });
 
 function checkContentType(req) {
     let contenType = req.header("Content-Type");
 
     if (contenType === "application/json") return true;
-
     return false;
 }
+
+// Sockets
+
+io.on("connection", (socket) => {
+    console.log("New connection");
+    socket.emit("hi", "hi");
+})
 
 client.connect()
 .then(() => {
