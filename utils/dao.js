@@ -13,7 +13,7 @@ class DAO {
             this.filter = "name";
         }
         else if (collection == Collection.Country) {
-            this.countries = mongodb.countries;
+            this.collection = mongodb.countries;
             this.filter = "code";
         }
     }
