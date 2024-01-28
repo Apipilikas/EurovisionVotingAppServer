@@ -20,7 +20,7 @@ function convertToJudgeArray(results) {
     let judgesArray = [];
 
     for (var result of results) {
-        let judge = new Judge(result.name, result.originCountry);
+        let judge = new Judge(result.code, result.name, result.originCountry);
         judgesArray.push(judge);
     }
 
@@ -30,12 +30,14 @@ function convertToJudgeArray(results) {
 // Create objects | Creating objects to ensure data / schema integrity
 
 function createJudge(data) {
-    return new Judge(data.name, data.originCountry);
+    return new Judge(data.code, data.name, data.originCountry);
 }
 
 function createCountry(data) {
+    let votes = {};
+
     return new Country(data.code, data.name, data.qualified,
-                       data.runningOrder, data.votes, data.totalVotes,
+                       data.runningOrder, votes, data.totalVotes,
                        data.flagColors, data.artist, data.song);
 }
 

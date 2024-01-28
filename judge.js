@@ -1,5 +1,6 @@
 class Judge {
-    constructor(name, originCountry, online = false) {
+    constructor(code, name, originCountry, online = false) {
+        this.code = code;
         this.name = name;
         this.originCountry = originCountry;
         this.online = online;

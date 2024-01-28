@@ -74,6 +74,12 @@ app.delete("/judge/:name", (req, res) => {
 
 // Countries
 
+app.get("/country/runningCountry", (req, res) => {
+    if (checkContentType(req)) {
+        res.send({runningOrder : 0});
+    }
+});
+
 app.get("/countries/all", (req, res) => {
     if (checkContentType(req)) {
         countryDAO.getAll()
@@ -100,16 +106,6 @@ app.post("/country", (req, res) => {
 });
 
 app.put("/country/:code", (req, res) => {
-    if (checkContentType(req)) {
-        countryDAO.update(req.params.code, req.body)
-        .then(ack => {
-            if (ack) res.status(200).send();
-            else res.status(409).send();
-        })
-    }
-});
-
-app.put("/country/vote/:name/:code/:points", (req, res) => {
     if (checkContentType(req)) {
         countryDAO.update(req.params.code, req.body)
         .then(ack => {

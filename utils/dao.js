@@ -22,8 +22,8 @@ class DAO {
         return { [this.filter]: id };
     }
 
-    getAll() {
-        return this.collection.find().toArray( (err, results) => {
+    getAll(filterQuery = {}) {
+        return this.collection.find(filterQuery).toArray( (err, results) => {
             if (err) throw err;
             return results;
         });
@@ -35,8 +35,7 @@ class DAO {
         return this.collection.findOne(filter, (err, result) => {
             if (err) throw err;
             return result;
-        })
-        
+        });
     }
 
     async insert(data, paramsToOmit = null) {
