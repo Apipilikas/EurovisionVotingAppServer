@@ -38,7 +38,7 @@ app.get("/judges/all", (req, res) => {
         judgeDAO.getAll()
         .then(results => {
             console.log(results);
-            res.status(200).json(convertToJudgeArray(results));
+            res.status(200).json({ judges: convertToJudgeArray(results)});
         });
     }
 });
