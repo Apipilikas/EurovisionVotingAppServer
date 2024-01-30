@@ -35,10 +35,10 @@ app.get("/", (req, res) => {
 app.get("/judges/all", (req, res) => {
     if (checkContentType(req)) {
         console.log("new request")
-        return judgeDAO.getAll()
+        judgeDAO.getAll()
         .then(results => {
             console.log(results);
-            res.status(200).send(convertToJudgeArray(results));
+            res.status(200).json(convertToJudgeArray(results));
         });
     }
 });
