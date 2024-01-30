@@ -27,7 +27,7 @@ const judgeDAO = new DAO.DAO(DAO.Collection.Judge);
 const countryDAO = new DAO.DAO(DAO.Collection.Country);
 
 app.get("/", (req, res) => {
-    return res.json({message : "Welcome"});
+    res.json({message : "Welcome"});
 });
 
 // Judges
