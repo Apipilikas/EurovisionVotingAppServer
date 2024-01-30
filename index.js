@@ -26,15 +26,19 @@ const client = mongodb.client;
 const judgeDAO = new DAO.DAO(DAO.Collection.Judge);
 const countryDAO = new DAO.DAO(DAO.Collection.Country);
 
+app.get("/", (req, res) => {
+    return res.json({message : "Welcome"});
+});
+
 // Judges
 
 app.get("/judges/all", (req, res) => {
     if (checkContentType(req)) {
         console.log("new request")
-        judgeDAO.getAll()
+        return judgeDAO.getAll()
         .then(results => {
             console.log(results);
-            res.send(convertToJudgeArray(results));
+            res.status(200).send(convertToJudgeArray(results));
         });
     }
 });
@@ -81,7 +85,7 @@ app.delete("/judge/:name", (req, res) => {
 
 app.get("/country/runningCountry", (req, res) => {
     if (checkContentType(req)) {
-        res.send({runningOrder : 0});
+        res.status(200).send({runningOrder : 0});
     }
 });
 
@@ -89,7 +93,7 @@ app.get("/countries/all", (req, res) => {
     if (checkContentType(req)) {
         countryDAO.getAll()
         .then(results => {
-            res.send(convertToCountryArray(results));
+            res.status(200).send(convertToCountryArray(results));
         });
     }
 });
