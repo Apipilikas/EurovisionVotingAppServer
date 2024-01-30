@@ -33,7 +33,7 @@ app.get("/", (req, res) => {
 // Judges
 
 app.get("/judges/all", (req, res) => {
-    if (checkContentType(req)) {
+    if (true) {
         console.log("new request")
         judgeDAO.getAll()
         .then(results => {
