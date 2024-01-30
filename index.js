@@ -2,12 +2,15 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const http = require('http');
+require('dotenv').config();
 const server = http.createServer(app);
 const { Server } = require('socket.io');
 const DAO = require('./utils/dao');
 
 app.use(cors());
 app.use(express.json());
+
+var port = process.env.PORT;
 
 const io = new Server(3000, {
     cors: {
@@ -27,8 +30,10 @@ const countryDAO = new DAO.DAO(DAO.Collection.Country);
 
 app.get("/judges/all", (req, res) => {
     if (checkContentType(req)) {
+        console.log("new request")
         judgeDAO.getAll()
         .then(results => {
+            console.log(results);
             res.send(convertToJudgeArray(results));
         });
     }
@@ -142,6 +147,6 @@ io.on("connection", (socket) => {
 client.connect()
 .then(() => {
     console.log("Database connected successfully!")
-    server.listen(8080);
-    console.log("Server is listening...");
+    server.listen(port);
+    console.log("Server is listening at port " + port + "...");
 })

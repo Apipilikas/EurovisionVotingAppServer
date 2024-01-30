@@ -1,6 +1,6 @@
 const mongoClient = require('mongodb').MongoClient;
 
-const url = "mongodb+srv://Apipilikas:p3180157agg15@cluster.r0jin.mongodb.net/ev-db?retryWrites=true&w=majority";
+const url = process.env.MONGO_URI;
 
 var client = new mongoClient(url);
 
