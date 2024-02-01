@@ -33,14 +33,12 @@ app.get("/", (req, res) => {
 // Judges
 
 app.get("/judges/all", (req, res) => {
-    if (true) {
-        console.log("new request")
-        judgeDAO.getAll()
-        .then(results => {
-            console.log(results);
-            res.status(200).json({ judges: convertToJudgeArray(results)});
-        });
-    }
+    judgeDAO.getAll()
+    .then(response => {
+        if (response.success) {
+            res.status(200).json(convertToJudgeArray(response.data));
+        }
+    });
 });
 
 app.get("/judges/:name", (req, res) => {
@@ -50,15 +48,14 @@ app.get("/judges/:name", (req, res) => {
 });
 
 app.post("/judge", (req, res) => {
-    if (checkContentType(req)) {
-        let judge = createJudge(req.body);
+    let judge = createJudge(req.body);
 
-        judgeDAO.insert(judge, ["online"])
-        .then(ack => {
-            if (ack) res.status(201).send();
-            else res.status(409).send();
-        })
-    }
+    judgeDAO.insert(judge, ["online"])
+    .then(response => {
+        if (response.success) res.status(201).send();
+        else res.status(409).send();
+    })
+
 });
 
 app.put("/judge/:name", (req, res) => {

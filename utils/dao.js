@@ -1,16 +1,30 @@
 const mongodb = require("../mongodb");
 const _ = require("lodash");
+const { DAOResponse } = require("./responses");
 
 const Collection = {
     Judge: "Judge",
     Country: "Country"
 }
 
+const ErrorCode = {
+    CANNOT_GET_ALL_RECORDS : "CANNOT_GET_ALL_RECORDS",
+    CANNOT_GET_SPECIFIC_RECORD : "CANNOT_GET_SPECIFIC_RECORD",
+    RECORD_ALREADY_EXISTS : "RECORD_ALREADY_EXISTS",
+    NO_RECORD_INSERTED : "NO_RECORD_INSERTED",
+    CANNOT_INSERT_RECORD : "CANNOT_INSERT_RECORD",
+    NO_RECORD_UPDATED : "NO_RECORD_UPDATED",
+    CANNOT_UPDATE_RECORD : "CANNOT_UPDATE_RECORD",
+    NO_RECORD_DELETED : "NO_RECORD_DELETED",
+    CANNOT_DELETE_RECORD : "CANNOT_DELETE_RECORD"
+
+}
+
 class DAO {
     constructor(collection) {
         if (collection == Collection.Judge) {
             this.collection = mongodb.judges;
-            this.filter = "name";
+            this.filter = "code";
         }
         else if (collection == Collection.Country) {
             this.collection = mongodb.countries;
@@ -22,46 +36,82 @@ class DAO {
         return { [this.filter]: id };
     }
 
-    getAll(filterQuery = {}) {
-        return this.collection.find(filterQuery).toArray( (err, results) => {
-            if (err) throw err;
-            return results;
-        });
+    async getAll(filterQuery = {}) {
+        try {
+            const result = await this.collection.find(filterQuery).toArray();
+
+            return DAOResponse.createSuccessfulResponse(result);
+        }
+        catch {}
+
+        return DAOResponse.createFailedResponse(ErrorCode.CANNOT_GET_ALL_RECORDS);
     }
 
-    getSpecific(id) {
+    async getSpecific(id) {
         const filter = this.getFilter(id);
 
-        return this.collection.findOne(filter, (err, result) => {
-            if (err) throw err;
-            return result;
-        });
+        try {
+            const result = await this.collection.findOne(filter);
+
+            return DAOResponse.createSuccessfulResponse(result);
+        }
+        catch { }
+        
+        return DAOResponse.createFailedResponse(ErrorCode.CANNOT_GET_SPECIFIC_RECORD);
     }
 
     async insert(data, paramsToOmit = null) {
         if (paramsToOmit != null) data = _.omit(data, paramsToOmit);
+        
+        try {
+            const ack = await this.collection.insertOne(data);
 
-        const ack = await this.collection.insertOne(data);
-        return ack.acknowledged;
+            if (ack.insertedId != null) {
+                return DAOResponse.createSuccessfulResponse();
+            }
+        }
+        catch (error) {
+            if (error.includes("E11000")) {
+                return DAOResponse.createFailedResponse(ErrorCode.RECORD_ALREADY_EXISTS);
+            }
+
+            return DAOResponse.createFailedResponse(ErrorCode.NO_RECORD_INSERTED);
+        }
+
+        return DAOResponse.createFailedResponse(ErrorCode.CANNOT_INSERT_RECORD);
     }
 
     async update(id, updatedData) {
         const filter = this.getFilter(id);
         const updatedDoc = { $set: updatedData };
 
-        const ack = await this.collection.updateOne(filter, updatedDoc);
-        return ack.acknowledged;
+        try {
+            const ack = await this.collection.updateOne(filter, updatedDoc);
+
+            if (ack.modifiedCount == 0) {
+                return DAOResponse.createFailedResponse(ErrorCode.NO_RECORD_UPDATED);
+            }
+        }
+        catch { }
+
+        return DAOResponse.createFailedResponse(ErrorCode.CANNOT_UPDATE_RECORD);
     }
 
     async delete(id) {
         const filter = this.getFilter(id);
 
-        const ack = await this.collection.deleteOne(filter);
-        return ack.acknowledged;
+        try {
+            const ack = await this.collection.deleteOne(filter);
+
+            if (ack.deletedCount == 0) {
+                return DAOResponse.createFailedResponse(ErrorCode.NO_RECORD_DELETED);
+            }
+        }
+        catch { }
+
+        return DAOResponse.createFailedResponse(ErrorCode.CANNOT_DELETE_RECORD);
     }
 }
-
-// Change the return value. Check the second parameter and return true/false.
 
 module.exports = {
     DAO,
