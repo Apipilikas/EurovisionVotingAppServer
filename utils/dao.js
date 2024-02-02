@@ -17,7 +17,6 @@ const ErrorCode = {
     CANNOT_UPDATE_RECORD : "CANNOT_UPDATE_RECORD",
     NO_RECORD_DELETED : "NO_RECORD_DELETED",
     CANNOT_DELETE_RECORD : "CANNOT_DELETE_RECORD"
-
 }
 
 class DAO {
@@ -63,21 +62,22 @@ class DAO {
     async insert(data, paramsToOmit = null) {
         if (paramsToOmit != null) data = _.omit(data, paramsToOmit);
         
-        try {
-            const ack = await this.collection.insertOne(data);
+        if (data[this.filter] != null) {
+            try {
+                const ack = await this.collection.insertOne(data);
 
-            if (ack.insertedId != null) {
-                return DAOResponse.createSuccessfulResponse();
+                if (ack.insertedId != null) {
+                    return DAOResponse.createSuccessfulResponse();
+                }
+            }
+            catch (error) {
+                if (error.message.includes("E11000")) {
+                    return DAOResponse.createFailedResponse(ErrorCode.RECORD_ALREADY_EXISTS);
+                }
+
+                return DAOResponse.createFailedResponse(ErrorCode.NO_RECORD_INSERTED);
             }
         }
-        catch (error) {
-            if (error.includes("E11000")) {
-                return DAOResponse.createFailedResponse(ErrorCode.RECORD_ALREADY_EXISTS);
-            }
-
-            return DAOResponse.createFailedResponse(ErrorCode.NO_RECORD_INSERTED);
-        }
-
         return DAOResponse.createFailedResponse(ErrorCode.CANNOT_INSERT_RECORD);
     }
 
@@ -90,6 +90,9 @@ class DAO {
 
             if (ack.modifiedCount == 0) {
                 return DAOResponse.createFailedResponse(ErrorCode.NO_RECORD_UPDATED);
+            }
+            else {
+                return DAOResponse.createSuccessfulResponse();
             }
         }
         catch { }
@@ -105,6 +108,9 @@ class DAO {
 
             if (ack.deletedCount == 0) {
                 return DAOResponse.createFailedResponse(ErrorCode.NO_RECORD_DELETED);
+            }
+            else {
+                return DAOResponse.createSuccessfulResponse();
             }
         }
         catch { }
