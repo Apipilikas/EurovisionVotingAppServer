@@ -9,15 +9,17 @@ const { judgeRouter } = require('./routers/judgeRouter');
 const mongodb = require('./mongodb');
 const { countryRouter } = require('./routers/countryRouter');
 const client = mongodb.client;
+const prefix = "/api/v1/";
 
 app.use(cors());
 app.use(express.json());
-app.use("/api/v1/", judgeRouter);
-app.use("/api/v1/", countryRouter)
+app.use(prefix, judgeRouter);
+app.use(prefix, countryRouter)
 
-var port = process.env.PORT;
+var serverPort = process.env.SERVER_PORT;
+const socketIOPort = process.env.SOCKETIO_PORT;
 
-const io = new Server(3000, {
+const io = new Server(socketIOPort, {
     cors: {
         origin: "*"
     }
@@ -35,6 +37,6 @@ io.on("connection", (socket) => {
 client.connect()
 .then(() => {
     console.log("Database connected successfully!")
-    server.listen(port);
-    console.log("Server is listening on port " + port + " . . .");
+    server.listen(serverPort);
+    console.log("Server is listening on port " + serverPort + " . . .");
 })

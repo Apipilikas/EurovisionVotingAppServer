@@ -5,11 +5,11 @@ const { ErrorResponse } = require('../utils/responses');
 
 const countryDAO = new DAO(Collection.Country);
 
-countryRouter.get("/countries/runningCountry", (req, res) => {
+countryRouter.get("/country/runningCountry", (req, res) => {
     res.status(200).json({runningOrder : 0});
 });
 
-countryRouter.get("/countries/all", (req, res) => {
+countryRouter.get("/country/all", (req, res) => {
     countryDAO.getAll()
     .then(response => {
         if (response.success) {
@@ -21,7 +21,7 @@ countryRouter.get("/countries/all", (req, res) => {
     });
 });
 
-countryRouter.get("/countries/:code", (req, res) => {
+countryRouter.get("/country/:code", (req, res) => {
     let code = req.params.code;
 
     countryDAO.getSpecific(code)
@@ -35,7 +35,7 @@ countryRouter.get("/countries/:code", (req, res) => {
     });
 });
 
-countryRouter.post("/countries", (req, res) => {
+countryRouter.post("/country", (req, res) => {
     let country = createCountry(req.body);
 
     countryDAO.insert(country)
@@ -47,7 +47,7 @@ countryRouter.post("/countries", (req, res) => {
     });
 });
 
-countryRouter.put("/countries/:code", (req, res) => {
+countryRouter.put("/country/:code", (req, res) => {
     let code = req.params.code;
 
     countryDAO.update(code, req.body)
@@ -59,7 +59,7 @@ countryRouter.put("/countries/:code", (req, res) => {
     });
 });
 
-countryRouter.delete("/countries/:code", (req, res) => {
+countryRouter.delete("/country/:code", (req, res) => {
     let code = req.params.code;
 
     countryDAO.delete(code)

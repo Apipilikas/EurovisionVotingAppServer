@@ -1,6 +1,6 @@
 const mongoClient = require('mongodb').MongoClient;
 
-const url = process.env.MONGO_URI;
+const url = process.env.MONGODB_URI;
 
 var client = new mongoClient(url);
 

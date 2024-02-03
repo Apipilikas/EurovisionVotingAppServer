@@ -5,7 +5,7 @@ const { ErrorResponse } = require('../utils/responses');
 
 const judgeDAO = new DAO(Collection.Judge);
 
-judgeRouter.get("/judges/all", (req, res) => {
+judgeRouter.get("/judge/all", (req, res) => {
     judgeDAO.getAll()
     .then(response => {
         if (response.success) {
@@ -17,7 +17,7 @@ judgeRouter.get("/judges/all", (req, res) => {
     });
 });
 
-judgeRouter.get("/judges/:code", (req, res) => {
+judgeRouter.get("/judge/:code", (req, res) => {
     let code = req.params.code;
 
     judgeDAO.getSpecific(code)
@@ -31,7 +31,7 @@ judgeRouter.get("/judges/:code", (req, res) => {
     });
 });
 
-judgeRouter.post("/judges", (req, res) => {
+judgeRouter.post("/judge", (req, res) => {
     let judge = createJudge(req.body);
 
     judgeDAO.insert(judge, ["online"])
@@ -44,7 +44,7 @@ judgeRouter.post("/judges", (req, res) => {
 
 });
 
-judgeRouter.put("/judges/:code", (req, res) => {
+judgeRouter.put("/judge/:code", (req, res) => {
     let code = req.params.code;
 
     judgeDAO.update(code, req.body)
@@ -56,7 +56,7 @@ judgeRouter.put("/judges/:code", (req, res) => {
     });
 });
 
-judgeRouter.delete("/judges/:code", (req, res) => {
+judgeRouter.delete("/judge/:code", (req, res) => {
     let code = req.params.code;
 
     judgeDAO.delete(code)
