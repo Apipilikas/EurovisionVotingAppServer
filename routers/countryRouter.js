@@ -1,15 +1,16 @@
 const countryRouter = require('express').Router();
+const { SocketIO } = require('../socketio');
 const { DAO, Collection } = require('../utils/dao');
 const { convertToCountryArray } = require('../utils/dataUtils');
 const { ErrorResponse } = require('../utils/responses');
 
 const countryDAO = new DAO(Collection.Country);
 
-countryRouter.get("/country/runningCountry", (req, res) => {
+countryRouter.get("/countries/runningCountry", (req, res) => {
     res.status(200).json({runningOrder : 0});
 });
 
-countryRouter.get("/country/all", (req, res) => {
+countryRouter.get("/countries/all", (req, res) => {
     countryDAO.getAll()
     .then(response => {
         if (response.success) {
@@ -21,7 +22,7 @@ countryRouter.get("/country/all", (req, res) => {
     });
 });
 
-countryRouter.get("/country/:code", (req, res) => {
+countryRouter.get("/countries/:code", (req, res) => {
     let code = req.params.code;
 
     countryDAO.getSpecific(code)
@@ -35,7 +36,7 @@ countryRouter.get("/country/:code", (req, res) => {
     });
 });
 
-countryRouter.post("/country", (req, res) => {
+countryRouter.post("/countries", (req, res) => {
     let country = createCountry(req.body);
 
     countryDAO.insert(country)
@@ -47,7 +48,7 @@ countryRouter.post("/country", (req, res) => {
     });
 });
 
-countryRouter.put("/country/:code", (req, res) => {
+countryRouter.put("/countries/:code", (req, res) => {
     let code = req.params.code;
 
     countryDAO.update(code, req.body)
@@ -59,7 +60,27 @@ countryRouter.put("/country/:code", (req, res) => {
     });
 });
 
-countryRouter.delete("/country/:code", (req, res) => {
+countryRouter.patch("/countries/vote/:countrycode/:judgecode", (req, res) => {
+    let countryCode = req.params.countrycode;
+    let judgeCode = req.params.judgecode;
+    let points = req.body.points;
+
+    let judgeCodeParam = "votes." + judgeCode;
+    let jsonData = { [judgeCodeParam] : points };
+
+    countryDAO.update(countryCode, jsonData)
+    .then(response => {
+        if (response.success) {
+            res.status(200).send();
+            SocketIO.sendVote(points);
+        }
+        else {
+            res.status(409).json(ErrorResponse.createResponse(response.errorCode, "Country", countryCode).toJSON());
+        }
+    })
+})
+
+countryRouter.delete("/countries/:code", (req, res) => {
     let code = req.params.code;
 
     countryDAO.delete(code)
