@@ -1,4 +1,6 @@
 const countryRouter = require('express').Router();
+
+const { getRunningCountry, getVotingStatuses, getVotingStatusByCountryCode } = require('../global');
 const { SocketIO } = require('../socketio');
 const { DAO, Collection } = require('../utils/dao');
 const { convertToCountryArray } = require('../utils/dataUtils');
@@ -7,8 +9,16 @@ const { ErrorResponse } = require('../utils/responses');
 const countryDAO = new DAO(Collection.Country);
 
 countryRouter.get("/countries/runningCountry", (req, res) => {
-    res.status(200).json({runningOrder : 0});
+    res.status(200).json({runningCountry : getRunningCountry()});
 });
+
+countryRouter.get("/countries/votingStatuses/all", (req, res) => {
+    res.status(200).json({votingStatuses : getVotingStatuses()});
+});
+
+countryRouter.get("/countries/votingStatuses/:countrycode", (req, res) => {
+    res.status(200).json({status : getVotingStatusByCountryCode(req.params.countrycode)});
+})
 
 countryRouter.get("/countries/all", (req, res) => {
     countryDAO.getAll()
@@ -66,13 +76,13 @@ countryRouter.patch("/countries/vote/:countrycode/:judgecode", (req, res) => {
     let points = req.body.points;
 
     let judgeCodeParam = "votes." + judgeCode;
-    let jsonData = { [judgeCodeParam] : points };
+    let jsonData = { [judgeCodeParam] : parseInt(points) };
 
     countryDAO.update(countryCode, jsonData)
     .then(response => {
         if (response.success) {
             res.status(200).send();
-            SocketIO.sendVote(points);
+            SocketIO.sendVote(judgeCode, countryCode, points);
         }
         else {
             res.status(409).json(ErrorResponse.createResponse(response.errorCode, "Country", countryCode).toJSON());

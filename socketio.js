@@ -1,42 +1,50 @@
 const { Server } = require('socket.io');
+const { runningCountry, setRunningCountry, setVotingStatuses } = require('./global');
 
 const socketIOPort = process.env.SOCKETIO_PORT;
 
 var SocketIO = (
     function () {
-        var io = null;
+        var ioInstance = null;
 
         function createSocketIO() {
-            console.log("Creating new instance");
-            var ioObject = new Server(socketIOPort, {
+            var io = new Server(socketIOPort, {
                 cors: {
                     origin: "*"
                 }
             });
 
-            ioObject.on("connection", (socket) => {
+            io.on("connection", (socket) => {
                 console.log("New connection");
                 socket.emit("hi", "hello");
                 
 
-                socket.on("nextCountry", (arg) => {
-                    socket.broadcast.emit("nextCountry", arg);
+                socket.on("nextCountry", (nextRunningCountry) => {
+                    setRunningCountry(nextRunningCountry.runningCountry);
+
+                    socket.broadcast.emit("nextCountry", nextRunningCountry);
                 });
+
+                socket.on("votingStatus", (votingStatus) => {
+                    setVotingStatuses(votingStatus.countries, votingStatus.status);
+
+                    socket.broadcast.emit("votingStatus", votingStatus);
+                })
             });
 
-            return ioObject;
+            return io;
         }
 
         return {
             getSocketIO: function () {
-                if (io == null) {
-                    io = createSocketIO();
+                if (ioInstance == null) {
+                    ioInstance = createSocketIO();
                 }
-                return io;
+                return ioInstance;
             },
-            sendVote: function(points) {
-                this.getSocketIO().sockets.emit("points", points);
-            }
+            sendVote: function(judgeCode, countryCode, points) {
+                this.getSocketIO().sockets.emit("points", {judgeCode: judgeCode, countryCode: countryCode, points: points});
+            },
         };
 })();
 
