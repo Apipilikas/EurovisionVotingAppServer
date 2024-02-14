@@ -35,7 +35,7 @@ class ErrorResponse {
         this.description = description;
     }
 
-    static createResponse(errorCode, collectionName, value) {
+    static create(errorCode, collectionName, value) {
         let errorDescription =  util.format(this.ErrorMapping.get(errorCode), collectionName, value);
         
         return new ErrorResponse(errorCode, errorDescription);

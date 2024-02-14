@@ -1,6 +1,6 @@
-const mongodb = require("../mongodb");
+const mongodb = require("./mongodb");
 const _ = require("lodash");
-const { DAOResponse } = require("./responses");
+const { DAOResponse } = require("./utils/responses");
 
 const Collection = {
     Judge: "Judge",
