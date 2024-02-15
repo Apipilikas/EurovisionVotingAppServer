@@ -2,6 +2,19 @@ const { getAllCountries, getSpecificCountry, createNewCountry, updateCountry, up
 const { Country } = require("../schemas/country");
 const { ErrorResponse } = require("../utils/responses");
 const { SocketIO } = require("../socketio");
+const { getRunningCountry, getVotingStatuses, getVotingStatusByCountryCode } = require("../global");
+
+module.exports.getRunningCountry = (req, res, next) => {
+    res.status(200).json({runningCountry : getRunningCountry()});
+};
+
+module.exports.getAllVotingStatuses = (req, res, next) => {
+    res.status(200).json({votingStatuses : getVotingStatuses()});
+};
+
+module.exports.getSpecificVotingStatus = (req, res, next) => {
+    res.status(200).json({status : getVotingStatusByCountryCode(req.params.countrycode)});
+};
 
 module.exports.getAllCountries = (req, res, next) => {
     getAllCountries()
@@ -24,7 +37,7 @@ module.exports.getSpecificCountry = (req, res, next) => {
             res.status(200).json({country : response.data});
         }
         else {
-            res.status(404).json(ErrorResponse.createResponse(response.errorCode, "Country", code).toJSON());
+            res.status(404).json(ErrorResponse.create(response.errorCode, "Country", code).toJSON());
         }
     });
 };
@@ -34,7 +47,7 @@ module.exports.createNewCountry = (req, res, next) => {
     .then(response => {
         if (response.success) res.status(201).send();
         else {
-            res.status(409).json(ErrorResponse.createResponse(response.errorCode, "Country", country.code).toJSON());
+            res.status(409).json(ErrorResponse.create(response.errorCode, "Country", country.code).toJSON());
         }
     });
 };
@@ -46,7 +59,7 @@ module.exports.updateCountry = (req, res, next) => {
     .then(response => {
         if (response.success) res.status(200).send();
         else {
-            res.status(409).json(ErrorResponse.createResponse(response.errorCode, "Country", code).toJSON());
+            res.status(409).json(ErrorResponse.create(response.errorCode, "Country", code).toJSON());
         }
     });
 };
@@ -63,7 +76,7 @@ module.exports.updateJudgeVotes = (req, res, next) => {
             SocketIO.sendVote(judgeCode, countryCode, points);
         }
         else {
-            res.status(409).json(ErrorResponse.createResponse(response.errorCode, "Country", countryCode).toJSON());
+            res.status(409).json(ErrorResponse.create(response.errorCode, "Country", countryCode).toJSON());
         }
     })
 };
@@ -75,7 +88,7 @@ module.exports.deleteCountry = (req, res, next) => {
     .then(response => {
         if (response.success) res.status(204).send();
         else {
-            res.status(409).json(ErrorResponse.createResponse(response.errorCode, "Country", code).toJSON());
+            res.status(409).json(ErrorResponse.create(response.errorCode, "Country", code).toJSON());
         }
     });
 };

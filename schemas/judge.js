@@ -23,4 +23,4 @@ class Judge {
     }
 }
 
-export { Judge };
+module.exports = { Judge };

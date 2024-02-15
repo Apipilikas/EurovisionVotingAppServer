@@ -1,18 +1,20 @@
 const countryRouter = require('express').Router();
-const { getAllCountries, getSpecificCountry, createNewCountry, updateCountry, updateJudgeVotes, deleteCountry } = require('../controllers/countryController');
-const { getRunningCountry, getVotingStatuses, getVotingStatusByCountryCode } = require('../global');
+const { 
+    getAllCountries, 
+    getSpecificCountry, 
+    createNewCountry, 
+    updateCountry, 
+    updateJudgeVotes, 
+    deleteCountry, 
+    getRunningCountry, 
+    getSpecificVotingStatus, 
+    getAllVotingStatuses } = require('../controllers/countryController');
 
-countryRouter.get("/countries/runningCountry", (req, res) => {
-    res.status(200).json({runningCountry : getRunningCountry()});
-});
+countryRouter.get("/countries/runningCountry", getRunningCountry);
 
-countryRouter.get("/countries/votingStatuses/all", (req, res) => {
-    res.status(200).json({votingStatuses : getVotingStatuses()});
-});
+countryRouter.get("/countries/votingStatuses/all", getAllVotingStatuses);
 
-countryRouter.get("/countries/votingStatuses/:countrycode", (req, res) => {
-    res.status(200).json({status : getVotingStatusByCountryCode(req.params.countrycode)});
-})
+countryRouter.get("/countries/votingStatuses/:countrycode", getSpecificVotingStatus);
 
 countryRouter.get("/countries/all", getAllCountries);
 
