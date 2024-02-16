@@ -2,10 +2,14 @@ const { getAllCountries, getSpecificCountry, createNewCountry, updateCountry, up
 const { Country } = require("../schemas/country");
 const { ErrorResponse } = require("../utils/responses");
 const { SocketIO } = require("../socketio");
-const { getRunningCountry, getVotingStatuses, getVotingStatusByCountryCode } = require("../global");
+const { getRunningCountry, getVotingStatuses, getVotingStatusByCountryCode, getVotingStatusByRunningOrder, getRunningCountryCode, setCountries } = require("../global");
 
 module.exports.getRunningCountry = (req, res, next) => {
-    res.status(200).json({runningCountry : getRunningCountry()});
+    let runningCountry = getRunningCountry();
+    let runningCountryCode = getRunningCountryCode();
+    let votingStatus = getVotingStatusByCountryCode(runningCountryCode);
+
+    res.status(200).json({runningCountry : runningCountry, runningCountryCode : runningCountryCode, votingStatus : votingStatus});
 };
 
 module.exports.getAllVotingStatuses = (req, res, next) => {
@@ -20,7 +24,10 @@ module.exports.getAllCountries = (req, res, next) => {
     getAllCountries()
     .then(response => {
         if (response.success) {
-            res.status(200).json({countries : Country.convertToArray(response.data)});
+            let countries = Country.convertToArray(response.data);
+            setCountries(countries);
+            
+            res.status(200).json({countries : countries});
         }
         else {
             res.status(404).json(ErrorResponse.create(response.errorCode, "Judges", null).toJSON());

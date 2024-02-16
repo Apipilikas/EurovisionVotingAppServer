@@ -1,4 +1,4 @@
-const { getAllJudges, getSpecificJudge, createNewJudge, deleteJudge } = require("../requests/judgeRequests");
+const { getAllJudges, getSpecificJudge, createNewJudge, deleteJudge, updateJudge } = require("../requests/judgeRequests");
 const { Judge } = require("../schemas/judge");
 const { ErrorResponse } = require("../utils/responses");
 
@@ -41,7 +41,7 @@ module.exports.createNewJudge = (req, res, next) => {
 module.exports.updateJudge = (req, res, next) => {
     let code = req.params.code;
 
-    judgeDAO.update(code, req.body)
+    updateJudge(code, req.body)
     .then(response => {
         if (response.success) res.status(200).send();
         else {

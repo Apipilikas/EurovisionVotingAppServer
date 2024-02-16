@@ -1,5 +1,5 @@
 const { Server } = require('socket.io');
-const { runningCountry, setRunningCountry, setVotingStatuses } = require('./global');
+const { runningCountry, setRunningCountry, setVotingStatuses, findCountryCodeByRunningOrder } = require('./global');
 
 const socketIOPort = process.env.SOCKETIO_PORT;
 
@@ -20,14 +20,18 @@ var SocketIO = (
                 
 
                 socket.on("nextCountry", (nextRunningCountry) => {
-                    setRunningCountry(nextRunningCountry.runningCountry);
+                    let runningOrder = nextRunningCountry.runningCountry;
+                    setRunningCountry(runningOrder);
+                    let nextCountryCode = findCountryCodeByRunningOrder(runningOrder);
+                    
+                    setVotingStatuses([nextCountryCode], nextRunningCountry.votingStatus);
 
                     socket.broadcast.emit("nextCountry", nextRunningCountry);
                 });
 
                 socket.on("votingStatus", (votingStatus) => {
                     setVotingStatuses(votingStatus.countries, votingStatus.status);
-
+                    
                     socket.broadcast.emit("votingStatus", votingStatus);
                 })
             });
