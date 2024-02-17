@@ -1,5 +1,5 @@
 const { Server } = require('socket.io');
-const { runningCountry, setRunningCountry, setVotingStatuses, findCountryCodeByRunningOrder } = require('./global');
+const { runningCountry, setRunningCountry, setVotingStatuses, findCountryCodeByRunningOrder } = require('./cache');
 
 const socketIOPort = process.env.SOCKETIO_PORT;
 
@@ -46,8 +46,8 @@ var SocketIO = (
                 }
                 return ioInstance;
             },
-            sendVote: function(judgeCode, countryCode, points) {
-                this.getSocketIO().sockets.emit("points", {judgeCode: judgeCode, countryCode: countryCode, points: points});
+            sendVote: function(judgeCode, countryCode, points, totalVotes) {
+                this.getSocketIO().sockets.emit("votes", {judgeCode: judgeCode, countryCode: countryCode, points: points, totalVotes : totalVotes});
             },
         };
 })();

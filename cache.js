@@ -51,8 +51,31 @@ function findCountryCodeByRunningOrder(runningOrder) {
 
 function fillCountries(data) {
     data.forEach(country => {
-        countries.push({runningOrder : country.runningOrder, code : country.code});
+        countries.push({runningOrder : country.runningOrder, code : country.code, votes : country.votes, totalVotes : country.totalVotes});
     });
+}
+
+function setVotes(judgeCode, countryCode, points) {
+    let country = countries.find(element => element.code = countryCode);
+
+    if (country == null) return;
+    else {
+        let preUpdatedPoints = 0;
+        let preUpdateTotalVotes = country.totalVotes;
+
+        if (country.votes[judgeCode] != null) {
+            preUpdatedPoints = country.votes[judgeCode];
+        }
+        country.votes[judgeCode] = points;
+        country.totalVotes = preUpdateTotalVotes + points - preUpdatedPoints;
+    }
+}
+
+function getTotalVotes(countryCode) {
+    let country = countries.find(element => element.code = countryCode);
+
+    if (country == null) return 0;
+    else return country.totalVotes;
 }
 
 //#endregion
@@ -92,7 +115,9 @@ module.exports = {
     setRunningCountry,
     getRunningCountry,
     getRunningCountryCode,
+    getTotalVotes,
     setCountries,
+    setVotes,
     findCountryCodeByRunningOrder,
     setVotingStatuses,
     getVotingStatusByCountryCode,
