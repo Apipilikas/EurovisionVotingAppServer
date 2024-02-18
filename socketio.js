@@ -23,9 +23,9 @@ var SocketIO = (
                     let runningOrder = nextRunningCountry.runningCountry;
                     setRunningCountry(runningOrder);
                     let nextCountryCode = findCountryCodeByRunningOrder(runningOrder);
-                    
                     setVotingStatuses([nextCountryCode], nextRunningCountry.votingStatus);
-
+                    
+                    nextRunningCountry.runningCountryCode = nextCountryCode;
                     socket.broadcast.emit("nextCountry", nextRunningCountry);
                 });
 
