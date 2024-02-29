@@ -1,7 +1,9 @@
+const { parseInt } = require("lodash");
 const { getAllJudges } = require("./requests/judgeRequests");
 
 let runningCountry = 0;
 let countries = [];
+let judges = [];
 let votingStatuses = [];
 
 //#region Running Country
@@ -43,20 +45,27 @@ function setCountries(countriesData) {
 }
 
 function findCountryCodeByRunningOrder(runningOrder) {
-    let country = countries.find(element => element.runningOrder == runningOrder);
-
+    let country = countries.find(element => parseInt(element.runningOrder) == parseInt(runningOrder));
+    
     if (country == null) return null;
     else return country.code;
 }
 
+function findCountryNameByCode(code) {
+    let country = countries.find(element => element.code == code);
+
+    if (country == null) return null;
+    else return country.name;
+}
+
 function fillCountries(data) {
     data.forEach(country => {
-        countries.push({runningOrder : country.runningOrder, code : country.code, votes : country.votes, totalVotes : country.totalVotes});
+        countries.push({runningOrder : country.runningOrder, code : country.code, name : country.name, votes : country.votes, totalVotes : country.totalVotes});
     });
 }
 
 function setVotes(judgeCode, countryCode, points) {
-    let country = countries.find(element => element.code = countryCode);
+    let country = countries.find(element => element.code == countryCode);
 
     if (country == null) return;
     else {
@@ -72,13 +81,36 @@ function setVotes(judgeCode, countryCode, points) {
 }
 
 function getTotalVotes(countryCode) {
-    let country = countries.find(element => element.code = countryCode);
+    let country = countries.find(element => element.code == countryCode);
 
     if (country == null) return 0;
     else return country.totalVotes;
 }
 
 //#endregion
+
+// #region Judges
+function setJudges(judgesData) {
+    if (judges.length == judgesData.length) return;
+
+    judges = [];
+
+    fillJudges(judgesData);
+}
+
+function findJudgeNameByCode(code) {
+    let judge = judges.find(element => element.code == code);
+    
+    if (judge == null) return null;
+    else return judge.name;
+}
+
+function fillJudges(data) {
+    data.forEach(judge => {
+        judges.push({code : judge.code, name : judge.name});
+    });
+}
+// #endregion
 
 //#region Voting Statuses
 
@@ -119,6 +151,9 @@ module.exports = {
     setCountries,
     setVotes,
     findCountryCodeByRunningOrder,
+    findCountryNameByCode,
+    setJudges,
+    findJudgeNameByCode,
     setVotingStatuses,
     getVotingStatusByCountryCode,
     getVotingStatusByRunningOrder,
