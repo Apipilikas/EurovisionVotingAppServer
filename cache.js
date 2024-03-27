@@ -20,6 +20,10 @@ function getRunningCountryCode() {
     return findCountryCodeByRunningOrder(runningCountry);
 }
 
+function resetRunningCountry() {
+    runningCountry = 0;
+}
+
 //#endregion
 
 //#region Countries
@@ -87,9 +91,26 @@ function getTotalVotes(countryCode) {
     else return country.totalVotes;
 }
 
+function resetCountries() {
+    countries = [];
+    initCountries();
+}
+
 //#endregion
 
 // #region Judges
+
+function initJudges() {
+    if (judges.length == 0) {
+        getAllJudges()
+        .then(response => {
+            if (response.success) {
+                fillJudges();
+            }
+        })
+    }
+}
+
 function setJudges(judgesData) {
     if (judges.length == judgesData.length) return;
 
@@ -110,6 +131,12 @@ function fillJudges(data) {
         judges.push({code : judge.code, name : judge.name});
     });
 }
+
+function resetJudges() {
+    judges = [];
+    initJudges();
+}
+
 // #endregion
 
 //#region Voting Statuses
@@ -141,21 +168,29 @@ function getVotingStatuses() {
     return votingStatuses;
 }
 
+function resetVotingStatuses() {
+    votingStatuses = [];
+}
+
 //#endregion
 
 module.exports = {
     setRunningCountry,
     getRunningCountry,
     getRunningCountryCode,
+    resetRunningCountry,
     getTotalVotes,
     setCountries,
+    resetCountries,
     setVotes,
     findCountryCodeByRunningOrder,
     findCountryNameByCode,
     setJudges,
+    resetJudges,
     findJudgeNameByCode,
     setVotingStatuses,
     getVotingStatusByCountryCode,
     getVotingStatusByRunningOrder,
-    getVotingStatuses
+    getVotingStatuses,
+    resetVotingStatuses
 };

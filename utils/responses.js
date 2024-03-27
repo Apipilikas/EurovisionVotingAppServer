@@ -26,7 +26,9 @@ class ErrorResponse {
         ["NO_RECORD_UPDATED", "%s with code %s has not been updated as it does not exist."],
         ["CANNOT_UPDATE_RECORD", "A problem occured while updating %s with code %s"],
         ["NO_RECORD_DELETED", "%s with code %s has not been deleted as it has been already deleted or it does not exist."],
-        ["CANNOT_DELETE_RECORD", "A problem occured while deleting %s with code %s"]
+        ["CANNOT_DELETE_RECORD", "A problem occured while deleting %s with code %s"],
+        ["JUDGE_PERMISSION_DENIED", "%s %s has no permission to execute this action."],
+        ["NO_JUDGE_CREDENTIALS_FOUND", "No authorization token found on headers request."]
     ]
     );
 

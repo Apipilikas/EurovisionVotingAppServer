@@ -8,13 +8,15 @@ const { judgeRouter } = require('./routers/judgeRouter');
 const mongodb = require('./mongodb');
 const { countryRouter } = require('./routers/countryRouter');
 const { SocketIO } = require('./socketio');
+const { adminRouter } = require('./routers/adminRouter');
 const client = mongodb.client;
 const prefix = "/api/v1/";
 
 app.use(cors());
 app.use(express.json());
 app.use(prefix, judgeRouter);
-app.use(prefix, countryRouter)
+app.use(prefix, countryRouter);
+app.use(prefix, adminRouter);
 
 const serverPort = process.env.SERVER_PORT;
 

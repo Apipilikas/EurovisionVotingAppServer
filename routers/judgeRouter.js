@@ -5,15 +5,16 @@ const {
     createNewJudge, 
     updateJudge, 
     deleteJudge } = require('../controllers/judgeController');
+const { authorizeJudge } = require('../utils/utils');
 
 judgeRouter.get("/judges/all", getAllJudges);
 
 judgeRouter.get("/judges/:code", getSpecificJudge);
 
-judgeRouter.post("/judges", createNewJudge);
+judgeRouter.post("/judges", authorizeJudge, createNewJudge);
 
-judgeRouter.put("/judges/:code", updateJudge);
+judgeRouter.put("/judges/:code", authorizeJudge, updateJudge);
 
-judgeRouter.delete("/judges/:code", deleteJudge);
+judgeRouter.delete("/judges/:code", authorizeJudge, deleteJudge);
 
 module.exports = {judgeRouter};

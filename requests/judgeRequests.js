@@ -12,7 +12,7 @@ function getSpecificJudge(code) {
 };
 
 function createNewJudge(data) {
-    let judge = new Judge(data.code, data.name, data.originCountry);
+    let judge = new Judge(data.code, data.name, data.originCountry, data.admin);
 
     return judgeDAO.insert(judge, ["online"]);
 };

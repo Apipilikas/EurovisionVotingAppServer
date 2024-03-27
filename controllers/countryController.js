@@ -89,6 +89,22 @@ module.exports.updateJudgeVotes = (req, res, next) => {
     })
 };
 
+module.exports.clearTotalVotes = (req, res, next) => {
+    let code = req.params.code;
+
+    let data = {votes : new Object(), totalVotes : 0};
+
+    updateCountry(code, data)
+    .then(response => {
+        if (response.success) {
+            res.status(200).send();
+        }
+        else {
+            res.status(409).json(ErrorResponse.create(response.errorCode, "Country", code));
+        }
+    })
+}
+
 module.exports.deleteCountry = (req, res, next) => {
     let code = req.params.code;
 

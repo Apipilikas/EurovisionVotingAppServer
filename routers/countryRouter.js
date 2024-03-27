@@ -8,7 +8,9 @@ const {
     deleteCountry, 
     getRunningCountry, 
     getSpecificVotingStatus, 
-    getAllVotingStatuses } = require('../controllers/countryController');
+    getAllVotingStatuses, 
+    clearTotalVotes} = require('../controllers/countryController');
+const { authorizeJudge } = require('../utils/utils');
 
 countryRouter.get("/countries/runningCountry", getRunningCountry);
 
@@ -20,12 +22,14 @@ countryRouter.get("/countries/all", getAllCountries);
 
 countryRouter.get("/countries/:code", getSpecificCountry);
 
-countryRouter.post("/countries", createNewCountry);
+countryRouter.post("/countries", authorizeJudge, createNewCountry);
 
-countryRouter.put("/countries/:code", updateCountry);
+countryRouter.put("/countries/:code", authorizeJudge, updateCountry);
 
 countryRouter.patch("/countries/vote/:countrycode/:judgecode", updateJudgeVotes)
 
-countryRouter.delete("/countries/:code", deleteCountry);
+countryRouter.patch("countries/totalVotes/clear", authorizeJudge, clearTotalVotes);
+
+countryRouter.delete("/countries/:code", authorizeJudge, deleteCountry);
 
 module.exports = {countryRouter};
