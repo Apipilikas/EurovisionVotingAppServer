@@ -1,15 +1,13 @@
 const { Server } = require('socket.io');
 const util = require('util');
-const { runningCountry, setRunningCountry, setVotingStatuses, findCountryCodeByRunningOrder, findCountryNameByCode, findJudgeNameByCode } = require('./cache');
-
-const socketIOPort = process.env.SOCKETIO_PORT;
+const { setRunningCountry, setVotingStatuses, findCountryCodeByRunningOrder, findCountryNameByCode, findJudgeNameByCode } = require('./cache');
 
 var SocketIO = (
     function () {
         var ioInstance = null;
 
-        function createSocketIO() {
-            var io = new Server(socketIOPort, {
+        function createSocketIO(server) {
+            var io = new Server(server, {
                 cors: {
                     origin: "*"
                 }
@@ -57,9 +55,9 @@ var SocketIO = (
         }
 
         return {
-            getSocketIO: function () {
-                if (ioInstance == null) {
-                    ioInstance = createSocketIO();
+            getSocketIO: function (server = null) {
+                if (ioInstance == null && server != null) {
+                    ioInstance = createSocketIO(server);
                 }
                 return ioInstance;
             },

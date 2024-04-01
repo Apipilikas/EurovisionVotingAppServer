@@ -22,7 +22,7 @@ const serverPort = process.env.SERVER_PORT;
 
 // Sockets
 
-SocketIO.getSocketIO();
+SocketIO.getSocketIO(server);
 
 // Set connections
 
