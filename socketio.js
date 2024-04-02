@@ -1,6 +1,6 @@
 const { Server } = require('socket.io');
 const util = require('util');
-const { setRunningCountry, setVotingStatuses, findCountryCodeByRunningOrder, findCountryNameByCode, findJudgeNameByCode } = require('./cache');
+const { setRunningCountry, setVotingStatuses, findCountryCodeByRunningOrder, findCountryNameByCode, findJudgeNameByCode, addSocketID, removeSocketID } = require('./cache');
 
 var SocketIO = (
     function () {
@@ -16,7 +16,16 @@ var SocketIO = (
             io.on("connection", (socket) => {
                 console.log("New connection");
                 socket.emit("hi", "hello");
-                
+
+                socket.on("connecting", (credentials) => {
+                    console.log("Connecting " + socket.id + " with judge code " + credentials.judgeCode);
+                    addSocketID(socket.id, credentials.judgeCode);
+                });
+
+                socket.on("disconnect", () => {
+                    console.log("Disconnect " + socket.id);
+                    removeSocketID(socket.id);
+                });                
 
                 socket.on("nextCountry", (nextRunningCountry) => {
                     let runningOrder = nextRunningCountry.runningCountry;

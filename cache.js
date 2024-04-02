@@ -1,10 +1,11 @@
-const { parseInt } = require("lodash");
+const _ = require("lodash");
 const { getAllJudges } = require("./requests/judgeRequests");
 
 let runningCountry = 0;
 let countries = [];
 let judges = [];
 let votingStatuses = [];
+let socketMapping = new Map();
 
 //#region Running Country
 
@@ -49,7 +50,7 @@ function setCountries(countriesData) {
 }
 
 function findCountryCodeByRunningOrder(runningOrder) {
-    let country = countries.find(element => parseInt(element.runningOrder) == parseInt(runningOrder));
+    let country = countries.find(element => _.parseInt(element.runningOrder) == _.parseInt(runningOrder));
     
     if (country == null) return null;
     else return country.code;
@@ -119,6 +120,15 @@ function setJudges(judgesData) {
     fillJudges(judgesData);
 }
 
+function updateJudgesEntry(judgeCode, updatedData) {
+    let judgeIndex = judges.findIndex(element => element.code == judgeCode);
+
+    if (judgeIndex < 0) return;
+    let judge = judges[judgeIndex];
+    judge = _.extend(judge, updatedData);
+    judges[judgeIndex] = judge;
+}
+
 function findJudgeNameByCode(code) {
     let judge = judges.find(element => element.code == code);
     
@@ -128,7 +138,7 @@ function findJudgeNameByCode(code) {
 
 function fillJudges(data) {
     data.forEach(judge => {
-        judges.push({code : judge.code, name : judge.name});
+        judges.push({code : judge.code, name : judge.name, online : false});
     });
 }
 
@@ -174,6 +184,26 @@ function resetVotingStatuses() {
 
 //#endregion
 
+//#region 
+
+function addSocketID(socketID, judgeCode) {
+    socketMapping.set(socketID, judgeCode);
+    
+    let judgeData = {online : true};
+    updateJudgesEntry(judgeCode, judgeData);
+}
+
+function removeSocketID(socketID) {
+    let judgeCode = socketMapping.get(socketID);
+
+    let judgeData = {online : false};
+    updateJudgesEntry(judgeCode, judgeData);
+
+    socketMapping.delete(socketID);
+}
+
+//#endregion
+
 module.exports = {
     setRunningCountry,
     getRunningCountry,
@@ -192,5 +222,7 @@ module.exports = {
     getVotingStatusByCountryCode,
     getVotingStatusByRunningOrder,
     getVotingStatuses,
-    resetVotingStatuses
+    resetVotingStatuses,
+    addSocketID,
+    removeSocketID
 };
