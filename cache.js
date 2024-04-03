@@ -1,5 +1,18 @@
 const _ = require("lodash");
-const { getAllJudges } = require("./requests/judgeRequests");
+const { JudgeRequests } = require("./requests/judgeRequests");
+const { CountryRequests } = require("./requests/countryRequests");
+
+//#region Namespaces
+
+var RunningCountryCache = {};
+var CountriesCache = {};
+var JudgesCache = {};
+var VotingStatusesCache = {};
+var SocketMappingCache = {};
+
+//#endregion
+
+//#region Variables
 
 let runningCountry = 0;
 let countries = [];
@@ -7,21 +20,23 @@ let judges = [];
 let votingStatuses = [];
 let socketMapping = new Map();
 
+//#endregion
+
 //#region Running Country
 
-function setRunningCountry(value) {
+RunningCountryCache.setRunningCountry = function(value) {
     runningCountry = value;
 }
 
-function getRunningCountry() {
+RunningCountryCache.getRunningCountry = function() {
     return runningCountry;
 }
 
-function getRunningCountryCode() {
-    return findCountryCodeByRunningOrder(runningCountry);
+RunningCountryCache.getRunningCountryCode = function() {
+    return CountriesCache.findCountryCodeByRunningOrder(runningCountry);
 }
 
-function resetRunningCountry() {
+RunningCountryCache.resetRunningCountry = function() {
     runningCountry = 0;
 }
 
@@ -29,98 +44,97 @@ function resetRunningCountry() {
 
 //#region Countries
 
-function initCountries() {
+CountriesCache.initCountries = function() {
     if (countries.length == 0) {
-        getAllJudges()
+        CountryRequests.getAllCountries()
         .then(response => {
             if (response.success) {
-                
-                fillCountries(response.data.countries)
+                CountriesCache.fillCountries(response.data.countries)
             }
         })
     }
 }
 
-function setCountries(countriesData) {
+CountriesCache.setCountries = function(countriesData) {
     if (countries.length == countriesData.length) return;
 
     countries = [];
 
-    fillCountries(countriesData);
+    CountriesCache.fillCountries(countriesData);
 }
 
-function findCountryCodeByRunningOrder(runningOrder) {
+CountriesCache.findCountryCodeByRunningOrder = function(runningOrder) {
     let country = countries.find(element => _.parseInt(element.runningOrder) == _.parseInt(runningOrder));
     
     if (country == null) return null;
     else return country.code;
 }
 
-function findCountryNameByCode(code) {
+CountriesCache.findCountryNameByCode = function(code) {
     let country = countries.find(element => element.code == code);
 
     if (country == null) return null;
     else return country.name;
 }
 
-function fillCountries(data) {
+CountriesCache.fillCountries = function(data) {
     data.forEach(country => {
         countries.push({runningOrder : country.runningOrder, code : country.code, name : country.name, votes : country.votes, totalVotes : country.totalVotes});
     });
 }
 
-function setVotes(judgeCode, countryCode, points) {
+CountriesCache.setVotes = function(judgeCode, countryCode, points) {
     let country = countries.find(element => element.code == countryCode);
 
     if (country == null) return;
     else {
         let preUpdatedPoints = 0;
-        let preUpdateTotalVotes = country.totalVotes;
+        let preUpdatedTotalVotes = country.totalVotes;
 
         if (country.votes[judgeCode] != null) {
             preUpdatedPoints = country.votes[judgeCode];
         }
         country.votes[judgeCode] = points;
-        country.totalVotes = preUpdateTotalVotes + points - preUpdatedPoints;
+        country.totalVotes = preUpdatedTotalVotes + points - preUpdatedPoints;
     }
 }
 
-function getTotalVotes(countryCode) {
+CountriesCache.getTotalVotes = function(countryCode) {
     let country = countries.find(element => element.code == countryCode);
 
     if (country == null) return 0;
     else return country.totalVotes;
 }
 
-function resetCountries() {
+CountriesCache.resetCountries = function() {
     countries = [];
-    initCountries();
+    CountriesCache.initCountries();
 }
 
 //#endregion
 
 // #region Judges
 
-function initJudges() {
+JudgesCache.initJudges = function() {
     if (judges.length == 0) {
-        getAllJudges()
+        JudgeRequests.getAllJudges()
         .then(response => {
             if (response.success) {
-                fillJudges();
+                JudgesCache.fillJudges(response.data.judges);
             }
         })
     }
 }
 
-function setJudges(judgesData) {
+JudgesCache.setJudges = function(judgesData) {
     if (judges.length == judgesData.length) return;
 
     judges = [];
 
-    fillJudges(judgesData);
+    JudgesCache.fillJudges(judgesData);
 }
 
-function updateJudgesEntry(judgeCode, updatedData) {
+JudgesCache.updateJudgesEntry = function(judgeCode, updatedData) {
     let judgeIndex = judges.findIndex(element => element.code == judgeCode);
 
     if (judgeIndex < 0) return;
@@ -129,29 +143,29 @@ function updateJudgesEntry(judgeCode, updatedData) {
     judges[judgeIndex] = judge;
 }
 
-function findJudgeNameByCode(code) {
+JudgesCache.findJudgeNameByCode = function(code) {
     let judge = judges.find(element => element.code == code);
     
     if (judge == null) return null;
     else return judge.name;
 }
 
-function fillJudges(data) {
+JudgesCache.fillJudges = function(data) {
     data.forEach(judge => {
         judges.push({code : judge.code, name : judge.name, online : false});
     });
 }
 
-function resetJudges() {
+JudgesCache.resetJudges = function() {
     judges = [];
-    initJudges();
+    JudgesCache.initJudges();
 }
 
 // #endregion
 
 //#region Voting Statuses
 
-function setVotingStatuses(countryCodes, status) {
+VotingStatusesCache.setVotingStatuses = function(countryCodes, status) {
     countryCodes.forEach(countryCode => {
         let i = votingStatuses.findIndex(element => element.countryCode == countryCode);
     
@@ -160,7 +174,7 @@ function setVotingStatuses(countryCodes, status) {
     });
 }
 
-function getVotingStatusByCountryCode(countryCode) {
+VotingStatusesCache.getVotingStatusByCountryCode = function(countryCode) {
     if (countryCode == null) return "CLOSED";
 
     let votingStatus = votingStatuses.find(element => element.countryCode == countryCode);
@@ -169,16 +183,16 @@ function getVotingStatusByCountryCode(countryCode) {
     else return votingStatus.status;
 }
 
-function getVotingStatusByRunningOrder(runningOrder) {
-    let countryCode = findCountryCodeByRunningOrder(runningOrder);
-    return getVotingStatusByCountryCode(countryCode);
+VotingStatusesCache.getVotingStatusByRunningOrder = function(runningOrder) {
+    let countryCode = CountriesCache.findCountryCodeByRunningOrder(runningOrder);
+    return VotingStatusesCache.getVotingStatusByCountryCode(countryCode);
 }
 
-function getVotingStatuses() {
+VotingStatusesCache.getVotingStatuses = function() {
     return votingStatuses;
 }
 
-function resetVotingStatuses() {
+VotingStatusesCache.resetVotingStatuses = function() {
     votingStatuses = [];
 }
 
@@ -186,43 +200,30 @@ function resetVotingStatuses() {
 
 //#region 
 
-function addSocketID(socketID, judgeCode) {
+SocketMappingCache.addSocketID = function(socketID, judgeCode) {
     socketMapping.set(socketID, judgeCode);
     
     let judgeData = {online : true};
-    updateJudgesEntry(judgeCode, judgeData);
+    JudgesCache.updateJudgesEntry(judgeCode, judgeData);
+    console.log(socketMapping)
 }
 
-function removeSocketID(socketID) {
+SocketMappingCache.removeSocketID = function(socketID) {
     let judgeCode = socketMapping.get(socketID);
 
     let judgeData = {online : false};
-    updateJudgesEntry(judgeCode, judgeData);
+    JudgesCache.updateJudgesEntry(judgeCode, judgeData);
 
     socketMapping.delete(socketID);
+    console.log(socketMapping);
 }
 
 //#endregion
 
 module.exports = {
-    setRunningCountry,
-    getRunningCountry,
-    getRunningCountryCode,
-    resetRunningCountry,
-    getTotalVotes,
-    setCountries,
-    resetCountries,
-    setVotes,
-    findCountryCodeByRunningOrder,
-    findCountryNameByCode,
-    setJudges,
-    resetJudges,
-    findJudgeNameByCode,
-    setVotingStatuses,
-    getVotingStatusByCountryCode,
-    getVotingStatusByRunningOrder,
-    getVotingStatuses,
-    resetVotingStatuses,
-    addSocketID,
-    removeSocketID
+    RunningCountryCache,
+    CountriesCache,
+    JudgesCache,
+    VotingStatusesCache,
+    SocketMappingCache
 };

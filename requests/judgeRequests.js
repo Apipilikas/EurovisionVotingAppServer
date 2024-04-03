@@ -1,34 +1,30 @@
 const {DAO, Collection} = require("../dao");
 const { Judge } = require("../schemas/judge");
 
+var JudgeRequests = {};
+
 const judgeDAO = new DAO(Collection.Judge);
 
-function getAllJudges() {
+JudgeRequests.getAllJudges = function() {
     return judgeDAO.getAll();
 };
 
-function getSpecificJudge(code) {
+JudgeRequests.getSpecificJudge = function(code) {
     return judgeDAO.getSpecific(code);
 };
 
-function createNewJudge(data) {
+JudgeRequests.createNewJudge = function(data) {
     let judge = new Judge(data.code, data.name, data.originCountry, data.admin);
 
     return judgeDAO.insert(judge, ["online"]);
 };
 
-function updateJudge(code, data) {
+JudgeRequests.updateJudge = function(code, data) {
     return judgeDAO.update(code, data);
 };
 
-function deleteJudge(code) {
+JudgeRequests.deleteJudge = function(code) {
     return judgeDAO.delete(code);
 };
 
-module.exports = {
-    getAllJudges,
-    getSpecificJudge,
-    createNewJudge,
-    updateJudge,
-    deleteJudge
-};
+module.exports = {JudgeRequests};

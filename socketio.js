@@ -1,6 +1,6 @@
 const { Server } = require('socket.io');
 const util = require('util');
-const { setRunningCountry, setVotingStatuses, findCountryCodeByRunningOrder, findCountryNameByCode, findJudgeNameByCode, addSocketID, removeSocketID } = require('./cache');
+const { SocketMappingCache, RunningCountryCache, VotingStatusesCache, CountriesCache, JudgesCache } = require('./cache');
 
 var SocketIO = (
     function () {
@@ -19,21 +19,21 @@ var SocketIO = (
 
                 socket.on("connecting", (credentials) => {
                     console.log("Connecting " + socket.id + " with judge code " + credentials.judgeCode);
-                    addSocketID(socket.id, credentials.judgeCode);
+                    SocketMappingCache.addSocketID(socket.id, credentials.judgeCode);
                 });
 
                 socket.on("disconnect", () => {
                     console.log("Disconnect " + socket.id);
-                    removeSocketID(socket.id);
+                    SocketMappingCache.removeSocketID(socket.id);
                 });                
 
                 socket.on("nextCountry", (nextRunningCountry) => {
                     let runningOrder = nextRunningCountry.runningCountry;
-                    setRunningCountry(runningOrder);
+                    RunningCountryCache.setRunningCountry(runningOrder);
                     
-                    let nextCountryCode = findCountryCodeByRunningOrder(runningOrder);
-                    let nextCountryName = findCountryNameByCode(nextCountryCode);
-                    setVotingStatuses([nextCountryCode], nextRunningCountry.votingStatus);
+                    let nextCountryCode = CountriesCache.findCountryCodeByRunningOrder(runningOrder);
+                    let nextCountryName = CountriesCache.findCountryNameByCode(nextCountryCode);
+                    VotingStatusesCache.setVotingStatuses([nextCountryCode], nextRunningCountry.votingStatus);
                     
                     nextRunningCountry.runningCountryCode = nextCountryCode;
                     nextRunningCountry.message = {};
@@ -44,10 +44,10 @@ var SocketIO = (
                 });
 
                 socket.on("votingStatus", (votingStatus) => {
-                    setVotingStatuses(votingStatus.countries, votingStatus.status);
+                    VotingStatusesCache.setVotingStatuses(votingStatus.countries, votingStatus.status);
                     votingStatus.messages = [];
                     votingStatus.countries.forEach(countryCode => {
-                        let countryName = findCountryNameByCode(countryCode);
+                        let countryName = CountriesCache.findCountryNameByCode(countryCode);
                         let status = votingStatus.status;
 
                         let text = util.format("Voting status for %s is now %s", countryName, status);
@@ -71,8 +71,8 @@ var SocketIO = (
                 return ioInstance;
             },
             sendVote: function(judgeCode, countryCode, points, totalVotes) {
-                let countryName = findCountryNameByCode(countryCode);
-                let judgeName = findJudgeNameByCode(judgeCode);
+                let countryName = CountriesCache.findCountryNameByCode(countryCode);
+                let judgeName = JudgesCache.findJudgeNameByCode(judgeCode);
 
                 let text = util.format("%s has voted %s points for %s", judgeName, points, countryName);
                 let innerHTML = util.format("<span>%s</span> has voted <span>%s</span> points for <span>%s</span>", judgeName, points, countryName);

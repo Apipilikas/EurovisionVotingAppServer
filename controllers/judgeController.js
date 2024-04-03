@@ -1,14 +1,14 @@
-const { setJudges } = require("../cache");
-const { getAllJudges, getSpecificJudge, createNewJudge, deleteJudge, updateJudge } = require("../requests/judgeRequests");
+const { setJudges, JudgesCache } = require("../cache");
+const { JudgeRequests } = require("../requests/judgeRequests");
 const { Judge } = require("../schemas/judge");
 const { ErrorResponse } = require("../utils/responses");
 
 module.exports.getAllJudges = (req, res, next) => {
-    getAllJudges()
+    JudgeRequests.getAllJudges()
     .then(response => {
         if (response.success) {
             let judges = Judge.convertToArray(response.data);
-            setJudges(judges);
+            JudgesCache.setJudges(judges);
             
             res.status(200).json({judges : judges});
         }
@@ -21,7 +21,7 @@ module.exports.getAllJudges = (req, res, next) => {
 module.exports.getSpecificJudge = (req, res, next) => {
     let code = req.params.code;
 
-    getSpecificJudge(code)
+    JudgeRequests.getSpecificJudge(code)
     .then(response => {
         if (response.success) {
             res.status(200).json({judge : response.data});
@@ -33,7 +33,7 @@ module.exports.getSpecificJudge = (req, res, next) => {
 };
 
 module.exports.createNewJudge = (req, res, next) => {
-    createNewJudge(req.body)
+    JudgeRequests.createNewJudge(req.body)
     .then(response => {
         if (response.success) res.status(201).send();
         else {
@@ -45,7 +45,7 @@ module.exports.createNewJudge = (req, res, next) => {
 module.exports.updateJudge = (req, res, next) => {
     let code = req.params.code;
 
-    updateJudge(code, req.body)
+    JudgeRequests.updateJudge(code, req.body)
     .then(response => {
         if (response.success) res.status(200).send();
         else {
@@ -57,7 +57,7 @@ module.exports.updateJudge = (req, res, next) => {
 module.exports.deleteJudge = (req, res, next) => {
     let code = req.params.code;
 
-    deleteJudge(code)
+    JudgeRequests.deleteJudge(code)
     .then(response => {
         if (response.success) res.status(204).send();
         else {

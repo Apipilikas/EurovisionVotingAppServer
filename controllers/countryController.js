@@ -1,31 +1,31 @@
-const { getAllCountries, getSpecificCountry, createNewCountry, updateCountry, updateJudgeVotes, deleteCountry } = require("../requests/countryRequests");
+const { getAllCountries, getSpecificCountry, createNewCountry, updateCountry, updateJudgeVotes, deleteCountry, CountryRequests } = require("../requests/countryRequests");
 const { Country } = require("../schemas/country");
 const { ErrorResponse } = require("../utils/responses");
 const { SocketIO } = require("../socketio");
-const { getRunningCountry, getVotingStatuses, getVotingStatusByCountryCode, getVotingStatusByRunningOrder, getRunningCountryCode, setCountries, setVotes, getTotalVotes } = require("../cache");
+const { RunningCountryCache, VotingStatusesCache, CountriesCache } = require("../cache");
 
 module.exports.getRunningCountry = (req, res, next) => {
-    let runningCountry = getRunningCountry();
-    let runningCountryCode = getRunningCountryCode();
-    let votingStatus = getVotingStatusByCountryCode(runningCountryCode);
+    let runningCountry = RunningCountryCache.getRunningCountry();
+    let runningCountryCode = RunningCountryCache.getRunningCountryCode();
+    let votingStatus = VotingStatusesCache.getVotingStatusByCountryCode(runningCountryCode);
 
     res.status(200).json({runningCountry : runningCountry, runningCountryCode : runningCountryCode, votingStatus : votingStatus});
 };
 
 module.exports.getAllVotingStatuses = (req, res, next) => {
-    res.status(200).json({votingStatuses : getVotingStatuses()});
+    res.status(200).json({votingStatuses : VotingStatusesCache.getVotingStatuses()});
 };
 
 module.exports.getSpecificVotingStatus = (req, res, next) => {
-    res.status(200).json({status : getVotingStatusByCountryCode(req.params.countrycode)});
+    res.status(200).json({status : VotingStatusesCache.getVotingStatusByCountryCode(req.params.countrycode)});
 };
 
 module.exports.getAllCountries = (req, res, next) => {
-    getAllCountries()
+    CountryRequests.getAllCountries()
     .then(response => {
         if (response.success) {
             let countries = Country.convertToArray(response.data);
-            setCountries(countries);
+            CountriesCache.setCountries(countries);
             
             res.status(200).json({countries : countries});
         }
@@ -38,7 +38,7 @@ module.exports.getAllCountries = (req, res, next) => {
 module.exports.getSpecificCountry = (req, res, next) => {
     let code = req.params.code;
 
-    getSpecificCountry(code)
+    CountryRequests.getSpecificCountry(code)
     .then(response => {
         if (response.success) {
             res.status(200).json({country : response.data});
@@ -50,7 +50,7 @@ module.exports.getSpecificCountry = (req, res, next) => {
 };
 
 module.exports.createNewCountry = (req, res, next) => {
-    createNewCountry(req.body)
+    CountryRequests.createNewCountry(req.body)
     .then(response => {
         if (response.success) res.status(201).send();
         else {
@@ -62,7 +62,7 @@ module.exports.createNewCountry = (req, res, next) => {
 module.exports.updateCountry = (req, res, next) => {
     let code = req.params.code;
 
-    updateCountry(code, req.body)
+    CountryRequests.updateCountry(code, req.body)
     .then(response => {
         if (response.success) res.status(200).send();
         else {
@@ -76,12 +76,12 @@ module.exports.updateJudgeVotes = (req, res, next) => {
     let judgeCode = req.params.judgecode;
     let points = parseInt(req.body.points);
 
-    updateJudgeVotes(countryCode, judgeCode, points)
+    CountryRequests.updateJudgeVotes(countryCode, judgeCode, points)
     .then(response => {
         if (response.success) {
             res.status(200).send();
-            setVotes(judgeCode, countryCode, points);
-            SocketIO.sendVote(judgeCode, countryCode, points, getTotalVotes(countryCode));
+            CountriesCache.setVotes(judgeCode, countryCode, points);
+            SocketIO.sendVote(judgeCode, countryCode, points, CountriesCache.getTotalVotes(countryCode));
         }
         else {
             res.status(409).json(ErrorResponse.create(response.errorCode, "Country", countryCode).toJSON());
@@ -94,7 +94,7 @@ module.exports.clearTotalVotes = (req, res, next) => {
 
     let data = {votes : new Object(), totalVotes : 0};
 
-    updateCountry(code, data)
+    CountryRequests.updateCountry(code, data)
     .then(response => {
         if (response.success) {
             res.status(200).send();
@@ -108,7 +108,7 @@ module.exports.clearTotalVotes = (req, res, next) => {
 module.exports.deleteCountry = (req, res, next) => {
     let code = req.params.code;
 
-    deleteCountry(code)
+    CountryRequests.deleteCountry(code)
     .then(response => {
         if (response.success) res.status(204).send();
         else {
