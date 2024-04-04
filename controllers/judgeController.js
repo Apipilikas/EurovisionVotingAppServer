@@ -4,6 +4,10 @@ const { Judge } = require("../schemas/judge");
 const { ErrorResponse } = require("../utils/responses");
 
 module.exports.getAllJudges = (req, res, next) => {
+    if (JudgesCache.isInitialized()) {
+        return res.status(200).json({judges : JudgesCache.getJudges()});
+    }
+
     JudgeRequests.getAllJudges()
     .then(response => {
         if (response.success) {

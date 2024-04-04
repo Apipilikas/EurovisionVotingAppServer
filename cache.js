@@ -44,15 +44,21 @@ RunningCountryCache.resetRunningCountry = function() {
 
 //#region Countries
 
-CountriesCache.initCountries = function() {
-    if (countries.length == 0) {
-        CountryRequests.getAllCountries()
-        .then(response => {
-            if (response.success) {
-                CountriesCache.fillCountries(response.data.countries)
-            }
-        })
-    }
+let isCountriesInitialized = false;
+
+CountriesCache.initCountries = async function() {
+
+    countries = await CountryRequests.getAllCountries()
+    .then(response => {
+        if (response.success) {
+            CountriesCache.fillCountries(response.data.countries);
+
+            return countries;
+        }
+        else return [];
+    });
+
+    return countries;
 }
 
 CountriesCache.setCountries = function(countriesData) {
@@ -61,6 +67,15 @@ CountriesCache.setCountries = function(countriesData) {
     countries = [];
 
     CountriesCache.fillCountries(countriesData);
+}
+
+CountriesCache.updateCountry = function(code, updatedData) {
+    let countryIndex = countries.findIndex(element => element.code == code);
+
+    if (countryIndex < 0) return;
+    let country = country[countryIndex];
+    country = _.extend(country, updatedData);
+    countries[countryIndex] = country;
 }
 
 CountriesCache.findCountryCodeByRunningOrder = function(runningOrder) {
@@ -81,6 +96,7 @@ CountriesCache.fillCountries = function(data) {
     data.forEach(country => {
         countries.push({runningOrder : country.runningOrder, code : country.code, name : country.name, votes : country.votes, totalVotes : country.totalVotes});
     });
+    isCountriesInitialized = true;
 }
 
 CountriesCache.setVotes = function(judgeCode, countryCode, points) {
@@ -111,31 +127,49 @@ CountriesCache.resetCountries = function() {
     CountriesCache.initCountries();
 }
 
+CountriesCache.clearCountries = function() {
+    countries = [];
+    isCountriesInitialized = false;
+}
+
+CountriesCache.isInitialized = function() {
+    return isCountriesInitialized;
+}
+
 //#endregion
 
 // #region Judges
 
-JudgesCache.initJudges = function() {
-    if (judges.length == 0) {
-        JudgeRequests.getAllJudges()
+let isJudgesInitialized = false;
+
+JudgesCache.initJudges = async function() {
+        judges = await JudgeRequests.getAllJudges()
         .then(response => {
             if (response.success) {
                 JudgesCache.fillJudges(response.data.judges);
+
+                return judges;
             }
-        })
-    }
+            else return [];
+        });
+
+        return judges;
+}
+
+JudgesCache.getJudges = function() {
+    return judges;
 }
 
 JudgesCache.setJudges = function(judgesData) {
     if (judges.length == judgesData.length) return;
 
-    judges = [];
+    clearJudges();
 
     JudgesCache.fillJudges(judgesData);
 }
 
-JudgesCache.updateJudgesEntry = function(judgeCode, updatedData) {
-    let judgeIndex = judges.findIndex(element => element.code == judgeCode);
+JudgesCache.updateJudge = function(code, updatedData) {
+    let judgeIndex = judges.findIndex(element => element.code == code);
 
     if (judgeIndex < 0) return;
     let judge = judges[judgeIndex];
@@ -151,14 +185,30 @@ JudgesCache.findJudgeNameByCode = function(code) {
 }
 
 JudgesCache.fillJudges = function(data) {
+    let onlineJudges = Array.from(socketMapping.values());
+
     data.forEach(judge => {
-        judges.push({code : judge.code, name : judge.name, online : false});
+        let isOnline = false;
+        if (onlineJudges.includes(judge.code)) isOnline = true;
+
+        judges.push({code : judge.code, name : judge.name, online : isOnline});
     });
+
+    isJudgesInitialized = true;
 }
 
 JudgesCache.resetJudges = function() {
+    clearJudges();
+    return JudgesCache.initJudges();
+}
+
+function clearJudges() {
     judges = [];
-    JudgesCache.initJudges();
+    isJudgesInitialized = false;
+}
+
+JudgesCache.isInitialized = function() {
+    return isJudgesInitialized;
 }
 
 // #endregion
@@ -204,7 +254,7 @@ SocketMappingCache.addSocketID = function(socketID, judgeCode) {
     socketMapping.set(socketID, judgeCode);
     
     let judgeData = {online : true};
-    JudgesCache.updateJudgesEntry(judgeCode, judgeData);
+    JudgesCache.updateJudge(judgeCode, judgeData);
     console.log(socketMapping)
 }
 
@@ -212,7 +262,7 @@ SocketMappingCache.removeSocketID = function(socketID) {
     let judgeCode = socketMapping.get(socketID);
 
     let judgeData = {online : false};
-    JudgesCache.updateJudgesEntry(judgeCode, judgeData);
+    JudgesCache.updateJudge(judgeCode, judgeData);
 
     socketMapping.delete(socketID);
     console.log(socketMapping);
