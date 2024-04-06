@@ -78,8 +78,15 @@ CountriesCache.updateCountry = function(code, updatedData) {
     countries[countryIndex] = country;
 }
 
-CountriesCache.findCountryCodeByRunningOrder = function(runningOrder) {
+CountriesCache.findCountryByRunningOrder = function(runningOrder) {
     let country = countries.find(element => _.parseInt(element.runningOrder) == _.parseInt(runningOrder));
+    
+    if (country == null) return null;
+    else return country;
+}
+
+CountriesCache.findCountryCodeByRunningOrder = function(runningOrder) {
+    let country = CountriesCache.findCountryByRunningOrder(runningOrder);
     
     if (country == null) return null;
     else return country.code;
@@ -94,7 +101,7 @@ CountriesCache.findCountryNameByCode = function(code) {
 
 CountriesCache.fillCountries = function(data) {
     data.forEach(country => {
-        countries.push({runningOrder : country.runningOrder, code : country.code, name : country.name, votes : country.votes, totalVotes : country.totalVotes});
+        countries.push(country);
     });
     isCountriesInitialized = true;
 }

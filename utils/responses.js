@@ -48,4 +48,45 @@ class ErrorResponse {
     }
 }
 
-module.exports = {DAOResponse, ErrorResponse};
+class SocketIOResponse {
+    constructor(data, message, hasMultipleMessages = false) {
+        this.data = data;
+        this.message = message;
+        this.hasMultipleMessages = hasMultipleMessages;
+    }
+
+    static create(data, message, ...params) {
+        let socketIOMessage = this.createMessage(message, ...params);
+
+        let response = new SocketIOResponse(data, socketIOMessage.toJSON());
+        return response;
+    }
+
+    static createMessage(message, ...params) {
+        let plainText = util.format(message, ...params);
+        params = params.map((param, index) => {
+            return util.format('<span class"prm-%s">%s</span>', index, param);
+        });
+        let htmlText = util.format(message, ...params);
+
+        return new SocketIOMessage(plainText, htmlText);
+    }
+
+    toJSON() {
+        let messageCaption = this.hasMultipleMessages ? "messages" : "message"; 
+        return {data : this.data, [messageCaption] : this.message};
+    }
+}
+
+class SocketIOMessage {
+    constructor(plainText, htmlText) {
+        this.plainText = plainText;
+        this.htmlText = htmlText;
+    }
+
+    toJSON() {
+        return {plainText : this.plainText, htmlText : this.htmlText};
+    }
+}
+
+module.exports = {DAOResponse, ErrorResponse, SocketIOResponse};

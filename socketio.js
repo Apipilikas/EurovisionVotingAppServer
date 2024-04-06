@@ -1,6 +1,7 @@
 const { Server } = require('socket.io');
 const util = require('util');
 const { SocketMappingCache, RunningCountryCache, VotingStatusesCache, CountriesCache, JudgesCache } = require('./cache');
+const { SocketIOResponse } = require('./utils/responses');
 
 var SocketIO = (
     function () {
@@ -31,32 +32,34 @@ var SocketIO = (
                     let runningOrder = nextRunningCountry.runningCountry;
                     RunningCountryCache.setRunningCountry(runningOrder);
                     
-                    let nextCountryCode = CountriesCache.findCountryCodeByRunningOrder(runningOrder);
-                    let nextCountryName = CountriesCache.findCountryNameByCode(nextCountryCode);
-                    VotingStatusesCache.setVotingStatuses([nextCountryCode], nextRunningCountry.votingStatus);
+                    let nextCountry = CountriesCache.findCountryByRunningOrder(runningOrder);
+                    VotingStatusesCache.setVotingStatuses([nextCountry.code], nextRunningCountry.votingStatus);
+                    nextRunningCountry.country = nextCountry;
+
+                    let data = {nextRunningCountry : nextRunningCountry};
+                    let response = SocketIOResponse.create(data, "Next country is %s", nextCountry.name);
                     
-                    nextRunningCountry.runningCountryCode = nextCountryCode;
-                    nextRunningCountry.message = {};
-                    nextRunningCountry.message.text = util.format("Next country is %s", nextCountryName);
-                    nextRunningCountry.message.innerHTML = util.format("Next country is <span>%s</span>", nextCountryName);
-                    
-                    socket.broadcast.emit("nextCountry", nextRunningCountry);
+                    io.sockets.emit("nextCountry", response.toJSON());
                 });
 
                 socket.on("votingStatus", (votingStatus) => {
                     VotingStatusesCache.setVotingStatuses(votingStatus.countries, votingStatus.status);
-                    votingStatus.messages = [];
+                    let messages = [];
                     votingStatus.countries.forEach(countryCode => {
                         let countryName = CountriesCache.findCountryNameByCode(countryCode);
                         let status = votingStatus.status;
 
-                        let text = util.format("Voting status for %s is now %s", countryName, status);
-                        let innerHTML = util.format("Voting status for <span>%s</span> is now <span>%s</span>", countryName, status);
+                        let message = SocketIOResponse.createMessage("Voting status for %s is now %s", countryName, status);
+                        // let text = util.format("Voting status for %s is now %s", countryName, status);
+                        // let innerHTML = util.format("Voting status for <span>%s</span> is now <span>%s</span>", countryName, status);
 
-                        votingStatus.messages.push({text : text, innerHTML : innerHTML});
+                        messages.push(message.toJSON());
                     });
                     
-                    socket.broadcast.emit("votingStatus", votingStatus);
+                    let data = {votingStatus : {countries : votingStatus.countries, status : votingStatus.status}};
+                    let response = new SocketIOResponse(data, messages, true);
+
+                    socket.broadcast.emit("votingStatus", response.toJSON());
                 })
             });
 
@@ -74,11 +77,10 @@ var SocketIO = (
                 let countryName = CountriesCache.findCountryNameByCode(countryCode);
                 let judgeName = JudgesCache.findJudgeNameByCode(judgeCode);
 
-                let text = util.format("%s has voted %s points for %s", judgeName, points, countryName);
-                let innerHTML = util.format("<span>%s</span> has voted <span>%s</span> points for <span>%s</span>", judgeName, points, countryName);
-                let message = {text : text, innerHTML : innerHTML};
+                let data = {voting : {judgeCode: judgeCode, countryCode: countryCode, points: points, totalVotes : totalVotes}};
+                let response = SocketIOResponse.create(data, "%s has voted %s points for %s", judgeName, points, countryName);
 
-                this.getSocketIO().sockets.emit("votes", {judgeCode: judgeCode, countryCode: countryCode, points: points, totalVotes : totalVotes, message : message});
+                this.getSocketIO().sockets.emit("votes", response.toJSON());
             },
         };
 })();
