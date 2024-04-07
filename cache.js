@@ -101,6 +101,7 @@ CountriesCache.findCountryNameByCode = function(code) {
 
 CountriesCache.fillCountries = function(data) {
     data.forEach(country => {
+        // TODO: merge voting statuses with country
         countries.push(country);
     });
     isCountriesInitialized = true;
@@ -197,8 +198,9 @@ JudgesCache.fillJudges = function(data) {
     data.forEach(judge => {
         let isOnline = false;
         if (onlineJudges.includes(judge.code)) isOnline = true;
+        judge.online = isOnline;
 
-        judges.push({code : judge.code, name : judge.name, online : isOnline});
+        judges.push(judge);
     });
 
     isJudgesInitialized = true;
