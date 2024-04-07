@@ -1,6 +1,7 @@
 const _ = require("lodash");
 const { JudgeRequests } = require("./requests/judgeRequests");
 const { CountryRequests } = require("./requests/countryRequests");
+const { CacheUtils } = require("./utils/cacheUtils");
 
 //#region Namespaces
 
@@ -69,13 +70,8 @@ CountriesCache.setCountries = function(countriesData) {
     CountriesCache.fillCountries(countriesData);
 }
 
-CountriesCache.updateCountry = function(code, updatedData) {
-    let countryIndex = countries.findIndex(element => element.code == code);
-
-    if (countryIndex < 0) return;
-    let country = country[countryIndex];
-    country = _.extend(country, updatedData);
-    countries[countryIndex] = country;
+CountriesCache.updateCountry = function(code, updatedCountry) {
+    return CacheUtils.updateEntry(countries, code, "code", updatedCountry);
 }
 
 CountriesCache.findCountryByRunningOrder = function(runningOrder) {
@@ -92,8 +88,12 @@ CountriesCache.findCountryCodeByRunningOrder = function(runningOrder) {
     else return country.code;
 }
 
+CountriesCache.findCountry = function(code) {
+    return CacheUtils.findEntry(countries, code, "code");
+}
+
 CountriesCache.findCountryNameByCode = function(code) {
-    let country = countries.find(element => element.code == code);
+    let country = CountriesCache.findCountry(code);
 
     if (country == null) return null;
     else return country.name;
@@ -102,13 +102,13 @@ CountriesCache.findCountryNameByCode = function(code) {
 CountriesCache.fillCountries = function(data) {
     data.forEach(country => {
         // TODO: merge voting statuses with country
-        countries.push(country);
+        CacheUtils.addEntry(countries, country);
     });
     isCountriesInitialized = true;
 }
 
 CountriesCache.setVotes = function(judgeCode, countryCode, points) {
-    let country = countries.find(element => element.code == countryCode);
+    let country = CountriesCache.findCountry(countryCode);
 
     if (country == null) return;
     else {
@@ -123,9 +123,9 @@ CountriesCache.setVotes = function(judgeCode, countryCode, points) {
     }
 }
 
-CountriesCache.getTotalVotes = function(countryCode) {
-    let country = countries.find(element => element.code == countryCode);
-
+CountriesCache.getTotalVotes = function(code) {
+    let country = CountriesCache.findCountry(code);
+    
     if (country == null) return 0;
     else return country.totalVotes;
 }
@@ -176,17 +176,12 @@ JudgesCache.setJudges = function(judgesData) {
     JudgesCache.fillJudges(judgesData);
 }
 
-JudgesCache.updateJudge = function(code, updatedData) {
-    let judgeIndex = judges.findIndex(element => element.code == code);
-
-    if (judgeIndex < 0) return;
-    let judge = judges[judgeIndex];
-    judge = _.extend(judge, updatedData);
-    judges[judgeIndex] = judge;
+JudgesCache.updateJudge = function(code, updatedJudge) {
+    return CacheUtils.updateEntry(judges, code, "code", updatedJudge);
 }
 
 JudgesCache.findJudgeNameByCode = function(code) {
-    let judge = judges.find(element => element.code == code);
+    let judge = CacheUtils.findEntry(judges, code, "code");
     
     if (judge == null) return null;
     else return judge.name;
@@ -200,7 +195,7 @@ JudgesCache.fillJudges = function(data) {
         if (onlineJudges.includes(judge.code)) isOnline = true;
         judge.online = isOnline;
 
-        judges.push(judge);
+        CacheUtils.addEntry(judges, judge);
     });
 
     isJudgesInitialized = true;
@@ -236,8 +231,8 @@ VotingStatusesCache.setVotingStatuses = function(countryCodes, status) {
 VotingStatusesCache.getVotingStatusByCountryCode = function(countryCode) {
     if (countryCode == null) return "CLOSED";
 
-    let votingStatus = votingStatuses.find(element => element.countryCode == countryCode);
-
+    let votingStatus = CacheUtils.findEntry(votingStatuses, countryCode, "countryCode");
+    
     if (votingStatus == null) return "CLOSED";
     else return votingStatus.status;
 }
