@@ -275,6 +275,10 @@ SocketMappingCache.removeSocketID = function(socketID) {
     console.log(socketMapping);
 }
 
+SocketMappingCache.getOnlineJudgeCodes = function() {
+    return Array.from(socketMapping.values());
+}
+
 //#endregion
 
 module.exports = {

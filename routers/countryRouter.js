@@ -28,7 +28,7 @@ countryRouter.put("/countries/:code", authorizeJudge, updateCountry);
 
 countryRouter.patch("/countries/vote/:countrycode/:judgecode", updateJudgeVotes)
 
-countryRouter.patch("countries/totalVotes/clear", authorizeJudge, clearTotalVotes);
+countryRouter.patch("/countries/totalVotes/clear", authorizeJudge, clearTotalVotes);
 
 countryRouter.delete("/countries/:code", authorizeJudge, deleteCountry);
 

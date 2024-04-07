@@ -1,23 +1,34 @@
-const { resetRunningCountry, resetVotingStatuses, resetJudges, resetCountries } = require("../cache")
+const { RunningCountryCache, VotingStatusesCache, JudgesCache, CountriesCache, SocketMappingCache } = require("../cache");
+
 
 module.exports.resetRunningCountry = (req, res, next) => {
-    resetRunningCountry();
+    RunningCountryCache.resetRunningCountry();
+    res.status(200);
 }
 
 module.exports.resetVotingStatusCache = (req, res, next) => {
-    resetVotingStatuses();
+    VotingStatusesCache.resetVotingStatuses();
+    res.status(200);
 }
 
 module.exports.resetJudgesCache = (req, res, next) => {
-    resetJudges();
+    JudgesCache.resetJudges();
+    res.status(200);
 }
 
 module.exports.resetCountriesCache = (req, res, next) => {
-    resetCountries();
+    CountriesCache.resetCountries();
+    res.status(200);
 }
 
 module.exports.resetAllCaches = (req, res, next) => {
-    resetVotingStatuses();
-    resetJudges();
-    resetCountries();
+    VotingStatusesCache.resetVotingStatuses();
+    JudgesCache.resetJudges();
+    CountriesCache.resetCountries();
+    res.status(200);
+}
+
+module.exports.getAllOnlineJudges = (req, res, next) => {
+    let onlineJudgeCodes = SocketMappingCache.getOnlineJudgeCodes();
+    res.status(200).json({judges : onlineJudgeCodes});
 }

@@ -1,4 +1,4 @@
-const { getSpecificJudge } = require("../requests/judgeRequests");
+const { JudgeRequests } = require("../requests/judgeRequests");
 const { ErrorResponse } = require("./responses");
 
 module.exports.authorizeJudge = (req, res, next) => {
@@ -8,7 +8,7 @@ module.exports.authorizeJudge = (req, res, next) => {
 
     let judgeCode = req.headers.authorization;
 
-    getSpecificJudge(judgeCode)
+    JudgeRequests.getSpecificJudge(judgeCode)
     .then(response => {
         if (response.success) {
             let judge = response.data;
