@@ -25,6 +25,14 @@ module.exports.getAllJudges = (req, res, next) => {
 module.exports.getSpecificJudge = (req, res, next) => {
     let code = req.params.code;
 
+    if (JudgesCache.isInitialized()) {
+        let judge = JudgesCache.findJudge(code);
+
+        if (judge != null) {
+            return res.status(200).json({judge : judge});
+        }
+    }
+
     JudgeRequests.getSpecificJudge(code)
     .then(response => {
         if (response.success) {
@@ -39,7 +47,10 @@ module.exports.getSpecificJudge = (req, res, next) => {
 module.exports.createNewJudge = (req, res, next) => {
     JudgeRequests.createNewJudge(req.body)
     .then(response => {
-        if (response.success) res.status(201).send();
+        if (response.success) {
+            JudgesCache.addJudge(req.body);
+            res.status(201).send();   
+        }
         else {
             res.status(409).json(ErrorResponse.create(response.errorCode, "Judge", judge.code).toJSON());
         }
@@ -51,7 +62,10 @@ module.exports.updateJudge = (req, res, next) => {
 
     JudgeRequests.updateJudge(code, req.body)
     .then(response => {
-        if (response.success) res.status(200).send();
+        if (response.success) {
+            JudgesCache.updateJudge(code, req.body);
+            res.status(200).send();
+        }
         else {
             res.status(409).json(ErrorResponse.create(response.errorCode, "Judge", code).toJSON());
         }
@@ -63,7 +77,10 @@ module.exports.deleteJudge = (req, res, next) => {
 
     JudgeRequests.deleteJudge(code)
     .then(response => {
-        if (response.success) res.status(204).send();
+        if (response.success) {
+            JudgesCache.deleteJudge(code);
+            res.status(204).send();
+        }
         else {
             res.status(409).json(ErrorResponse.create(response.errorCode, "Judge", code).toJSON());
         }

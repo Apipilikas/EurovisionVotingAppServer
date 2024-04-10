@@ -62,12 +62,20 @@ CountriesCache.initCountries = async function() {
     return countries;
 }
 
+CountriesCache.getCountries = function() {
+    return countries;
+}
+
 CountriesCache.setCountries = function(countriesData) {
     if (countries.length == countriesData.length) return;
 
     countries = [];
 
     CountriesCache.fillCountries(countriesData);
+}
+
+CountriesCache.addCountry = function(country) {
+    return CacheUtils.addEntry(countries, country);
 }
 
 CountriesCache.updateCountry = function(code, updatedCountry) {
@@ -135,6 +143,10 @@ CountriesCache.resetCountries = function() {
     CountriesCache.initCountries();
 }
 
+CountriesCache.deleteCountry = function(code) {
+    return CacheUtils.deleteEntry(countries, code, "code");
+}
+
 CountriesCache.clearCountries = function() {
     countries = [];
     isCountriesInitialized = false;
@@ -176,8 +188,16 @@ JudgesCache.setJudges = function(judgesData) {
     JudgesCache.fillJudges(judgesData);
 }
 
+JudgesCache.addJudge = function(judge) {
+    return CacheUtils.addEntry(judges, judge);
+}
+
 JudgesCache.updateJudge = function(code, updatedJudge) {
     return CacheUtils.updateEntry(judges, code, "code", updatedJudge);
+}
+
+JudgesCache.findJudge = function(code) {
+    return CacheUtils.findEntry(judges, code, "code");
 }
 
 JudgesCache.findJudgeNameByCode = function(code) {
@@ -204,6 +224,10 @@ JudgesCache.fillJudges = function(data) {
 JudgesCache.resetJudges = function() {
     clearJudges();
     return JudgesCache.initJudges();
+}
+
+JudgesCache.deleteJudge = function(code) {
+    return CacheUtils.deleteEntry(judges, code, "code");
 }
 
 function clearJudges() {

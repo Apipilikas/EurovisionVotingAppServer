@@ -21,6 +21,10 @@ module.exports.getSpecificVotingStatus = (req, res, next) => {
 };
 
 module.exports.getAllCountries = (req, res, next) => {
+    if (CountriesCache.isInitialized()) {
+        return res.status(200).json({countries : CountriesCache.getCountries()});
+    }
+
     CountryRequests.getAllCountries()
     .then(response => {
         if (response.success) {
@@ -38,6 +42,14 @@ module.exports.getAllCountries = (req, res, next) => {
 module.exports.getSpecificCountry = (req, res, next) => {
     let code = req.params.code;
 
+    if (CountriesCache.isInitialized()) {
+        let country = CountriesCache.findCountry(code);
+
+        if (code != null) {
+            returnres.status(200).json({country : country});
+        }
+    }
+
     CountryRequests.getSpecificCountry(code)
     .then(response => {
         if (response.success) {
@@ -52,7 +64,10 @@ module.exports.getSpecificCountry = (req, res, next) => {
 module.exports.createNewCountry = (req, res, next) => {
     CountryRequests.createNewCountry(req.body)
     .then(response => {
-        if (response.success) res.status(201).send();
+        if (response.success) {
+            CountriesCache.addCountry(req.body);
+            res.status(201).send();
+        }
         else {
             res.status(409).json(ErrorResponse.create(response.errorCode, "Country", country.code).toJSON());
         }
@@ -64,7 +79,10 @@ module.exports.updateCountry = (req, res, next) => {
 
     CountryRequests.updateCountry(code, req.body)
     .then(response => {
-        if (response.success) res.status(200).send();
+        if (response.success) {
+            CountriesCache.updateCountry(code, req.body);
+            res.status(200).send();
+        }
         else {
             res.status(409).json(ErrorResponse.create(response.errorCode, "Country", code).toJSON());
         }
@@ -97,6 +115,7 @@ module.exports.clearTotalVotes = (req, res, next) => {
     CountryRequests.updateCountry(code, data)
     .then(response => {
         if (response.success) {
+            CountriesCache.updateCountry(code, data);
             res.status(200).send();
         }
         else {
@@ -110,7 +129,10 @@ module.exports.deleteCountry = (req, res, next) => {
 
     CountryRequests.deleteCountry(code)
     .then(response => {
-        if (response.success) res.status(204).send();
+        if (response.success) {
+            CountriesCache.deleteCountry(code);
+            res.status(204).send();
+        }
         else {
             res.status(409).json(ErrorResponse.create(response.errorCode, "Country", code).toJSON());
         }
