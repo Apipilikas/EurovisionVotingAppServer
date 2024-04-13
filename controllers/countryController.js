@@ -46,7 +46,7 @@ module.exports.getSpecificCountry = (req, res, next) => {
         let country = CountriesCache.findCountry(code);
 
         if (code != null) {
-            returnres.status(200).json({country : country});
+            return res.status(200).json({country : country});
         }
     }
 
@@ -69,7 +69,7 @@ module.exports.createNewCountry = (req, res, next) => {
             res.status(201).send();
         }
         else {
-            res.status(409).json(ErrorResponse.create(response.errorCode, "Country", country.code).toJSON());
+            res.status(409).json(ErrorResponse.create(response.errorCode, "Country", req.body.code).toJSON());
         }
     });
 };
