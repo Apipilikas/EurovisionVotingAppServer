@@ -50,8 +50,6 @@ var SocketIO = (
                         let status = votingStatus.status;
 
                         let message = SocketIOResponse.createMessage("Voting status for %s is now %s", countryName, status);
-                        // let text = util.format("Voting status for %s is now %s", countryName, status);
-                        // let innerHTML = util.format("Voting status for <span>%s</span> is now <span>%s</span>", countryName, status);
 
                         messages.push(message.toJSON());
                     });

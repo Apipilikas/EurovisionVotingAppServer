@@ -1,5 +1,4 @@
-const { getAllCountries, getSpecificCountry, createNewCountry, updateCountry, updateJudgeVotes, deleteCountry, CountryRequests } = require("../requests/countryRequests");
-const { Country } = require("../schemas/country");
+const { CountryRequests } = require("../requests/countryRequests");
 const { ErrorResponse } = require("../utils/responses");
 const { SocketIO } = require("../socketio");
 const { RunningCountryCache, VotingStatusesCache, CountriesCache } = require("../cache");
@@ -28,7 +27,7 @@ module.exports.getAllCountries = (req, res, next) => {
     CountryRequests.getAllCountries()
     .then(response => {
         if (response.success) {
-            let countries = Country.convertToArray(response.data);
+            let countries = response.data;
             CountriesCache.setCountries(countries);
             
             res.status(200).json({countries : countries});

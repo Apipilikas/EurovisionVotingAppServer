@@ -5,8 +5,11 @@ var JudgeRequests = {};
 
 const judgeDAO = new DAO(Collection.Judge);
 
-JudgeRequests.getAllJudges = function() {
-    return judgeDAO.getAll();
+JudgeRequests.getAllJudges = async function() {
+    let response = await judgeDAO.getAll();
+    response.data = Judge.convertToArray(response.data);
+
+    return response;
 };
 
 JudgeRequests.getSpecificJudge = function(code) {

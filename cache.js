@@ -49,17 +49,15 @@ let isCountriesInitialized = false;
 
 CountriesCache.initCountries = async function() {
 
-    countries = await CountryRequests.getAllCountries()
+    return CountryRequests.getAllCountries()
     .then(response => {
         if (response.success) {
-            CountriesCache.fillCountries(response.data.countries);
-
-            return countries;
+            CountriesCache.fillCountries(response.data);
+            return true;
         }
-        else return [];
-    });
-
-    return countries;
+        else return false;
+    })
+    .catch(e => {return false});
 }
 
 CountriesCache.getCountries = function() {
@@ -140,7 +138,7 @@ CountriesCache.getTotalVotes = function(code) {
 
 CountriesCache.resetCountries = function() {
     countries = [];
-    CountriesCache.initCountries();
+    return CountriesCache.initCountries();
 }
 
 CountriesCache.deleteCountry = function(code) {
@@ -163,17 +161,15 @@ CountriesCache.isInitialized = function() {
 let isJudgesInitialized = false;
 
 JudgesCache.initJudges = async function() {
-        judges = await JudgeRequests.getAllJudges()
+        return JudgeRequests.getAllJudges()
         .then(response => {
             if (response.success) {
-                JudgesCache.fillJudges(response.data.judges);
-
-                return judges;
+                JudgesCache.fillJudges(response.data);
+                return true;
             }
-            else return [];
-        });
-
-        return judges;
+            else return false;
+        })
+        .catch(e => {return false});
 }
 
 JudgesCache.getJudges = function() {

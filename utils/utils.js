@@ -12,8 +12,8 @@ module.exports.authorizeJudge = (req, res, next) => {
     .then(response => {
         if (response.success) {
             let judge = response.data;
-            let isAdmin = judge.admin;
-            let name = judge.name;
+            let isAdmin = judge?.admin;
+            let name = judge?.name;
 
             if (isAdmin) {
                 console.log("has permission");

@@ -3,29 +3,40 @@ const { RunningCountryCache, VotingStatusesCache, JudgesCache, CountriesCache, S
 
 module.exports.resetRunningCountry = (req, res, next) => {
     RunningCountryCache.resetRunningCountry();
-    res.status(200);
+    res.status(200).send();
 }
 
 module.exports.resetVotingStatusCache = (req, res, next) => {
     VotingStatusesCache.resetVotingStatuses();
-    res.status(200);
+    res.status(200).send();
 }
 
 module.exports.resetJudgesCache = (req, res, next) => {
-    JudgesCache.resetJudges();
-    res.status(200);
+    JudgesCache.resetJudges()
+    .then(response => {
+        if (response) {
+            res.status(200).send();
+        }
+    });
 }
 
 module.exports.resetCountriesCache = (req, res, next) => {
-    CountriesCache.resetCountries();
-    res.status(200);
+    CountriesCache.resetCountries()
+    .then(response => {
+        if (response) {
+            res.status(200).send();
+        }
+    })
 }
 
-module.exports.resetAllCaches = (req, res, next) => {
+module.exports.resetAllCaches = async (req, res, next) => {
     VotingStatusesCache.resetVotingStatuses();
-    JudgesCache.resetJudges();
-    CountriesCache.resetCountries();
-    res.status(200);
+    let judgesResponse = await JudgesCache.resetJudges();
+    let countriesResponse = await CountriesCache.resetCountries();
+    
+    if (judgesResponse && countriesResponse) {
+        res.status(200).send();
+    }
 }
 
 module.exports.getAllOnlineJudges = (req, res, next) => {

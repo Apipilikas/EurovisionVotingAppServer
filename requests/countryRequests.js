@@ -5,8 +5,11 @@ var CountryRequests = {};
 
 const countryDAO = new DAO(Collection.Country);
 
-CountryRequests.getAllCountries = function() {
-    return countryDAO.getAll();
+CountryRequests.getAllCountries = async function() {
+    let response = await countryDAO.getAll();
+    response.data = Country.convertToArray(response.data);
+
+    return response;
 };
 
 CountryRequests.getSpecificCountry = function(code) {
