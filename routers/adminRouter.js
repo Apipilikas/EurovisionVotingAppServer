@@ -5,7 +5,9 @@ const {
     resetJudgesCache, 
     resetCountriesCache, 
     resetAllCaches, 
-    getAllOnlineJudges} = require('../controllers/adminController');
+    getAllOnlineJudges,
+    setWinnerCountry,
+    clearWinnerCountry} = require('../controllers/adminController');
 const { authorizeJudge } = require('../utils/utils');
 
 
@@ -20,6 +22,10 @@ adminRouter.post("/admin/cache/judges/reset", resetJudgesCache);
 adminRouter.post("/admin/cache/countries/reset", resetCountriesCache);
 
 adminRouter.post("/admin/cache/reset", resetAllCaches);
+
+adminRouter.post("/admin/winnerCountry", setWinnerCountry);
+
+adminRouter.post("/admin/winnerCountry/clear", clearWinnerCountry);
 
 adminRouter.get("/admin/onlineJudges/all", getAllOnlineJudges);
 

@@ -9,7 +9,8 @@ const {
     getRunningCountry, 
     getSpecificVotingStatus, 
     getAllVotingStatuses, 
-    clearTotalVotes} = require('../controllers/countryController');
+    clearTotalVotes,
+    getWinnerCountry} = require('../controllers/countryController');
 const { authorizeJudge } = require('../utils/utils');
 
 countryRouter.get("/countries/runningCountry", getRunningCountry);
@@ -20,7 +21,9 @@ countryRouter.get("/countries/votingStatuses/:countrycode", getSpecificVotingSta
 
 countryRouter.get("/countries/all", getAllCountries);
 
-countryRouter.get("/countries/:code", getSpecificCountry);
+countryRouter.get("/countries/specific/:code", getSpecificCountry);
+
+countryRouter.get("/countries/winnerCountry", getWinnerCountry);
 
 countryRouter.post("/countries", authorizeJudge, createNewCountry);
 

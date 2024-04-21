@@ -137,3 +137,7 @@ module.exports.deleteCountry = (req, res, next) => {
         }
     });
 };
+
+module.exports.getWinnerCountry = (req, res, next) => {
+    res.status(200).json({country : CountriesCache.getWinnerCountry()});
+}

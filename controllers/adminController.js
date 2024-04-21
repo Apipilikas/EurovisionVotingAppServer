@@ -43,3 +43,14 @@ module.exports.getAllOnlineJudges = (req, res, next) => {
     let onlineJudgeCodes = SocketMappingCache.getOnlineJudgeCodes();
     res.status(200).json({judges : onlineJudgeCodes});
 }
+
+module.exports.setWinnerCountry = (req, res, next) => {
+    let code = req.body.code;
+    CountriesCache.setWinnerCountry(code);
+    res.status(200).send();
+}
+
+module.exports.clearWinnerCountry = (req, res, next) => {
+    CountriesCache.clearWinnerCountry();
+    res.status(200).send();
+}

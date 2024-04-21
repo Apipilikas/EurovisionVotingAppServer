@@ -9,7 +9,7 @@ const { authorizeJudge } = require('../utils/utils');
 
 judgeRouter.get("/judges/all", getAllJudges);
 
-judgeRouter.get("/judges/:code", getSpecificJudge);
+judgeRouter.get("/judges/specific/:code", getSpecificJudge);
 
 judgeRouter.post("/judges", authorizeJudge, createNewJudge);
 

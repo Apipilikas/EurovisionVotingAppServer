@@ -17,6 +17,7 @@ var SocketMappingCache = {};
 
 let runningCountry = 0;
 let countries = [];
+let winnerCountry = null;
 let judges = [];
 let votingStatuses = [];
 let socketMapping = new Map();
@@ -152,6 +153,19 @@ CountriesCache.clearCountries = function() {
 
 CountriesCache.isInitialized = function() {
     return isCountriesInitialized;
+}
+
+// Winner country
+CountriesCache.getWinnerCountry = function() {
+    return winnerCountry;
+}
+
+CountriesCache.setWinnerCountry = function(countryCode) {
+    winnerCountry = CountriesCache.findCountry(countryCode);
+}
+
+CountriesCache.clearWinnerCountry = function() {
+    winnerCountry = null;
 }
 
 //#endregion
