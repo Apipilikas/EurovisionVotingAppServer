@@ -58,7 +58,17 @@ var SocketIO = (
                     let response = new SocketIOResponse(data, messages, true);
 
                     socket.broadcast.emit("votingStatus", response.toJSON());
-                })
+                });
+
+                socket.on("general", (generalResponse) => {
+                    // received info : {type : CACHE_RESETING, message : message}
+                    // sent info : {data : type : xx, }
+                    console.log(generalResponse)
+                    let data = {code : generalResponse.code};
+                    let response = SocketIOResponse.create(data, generalResponse.message);
+                    console.log(response)
+                    socket.broadcast.emit("general", response.toJSON());
+                });
             });
 
             return io;

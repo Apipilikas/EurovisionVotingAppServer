@@ -255,9 +255,9 @@ JudgesCache.isInitialized = function() {
 
 VotingStatusesCache.setVotingStatuses = function(countryCodes, status) {
     countryCodes.forEach(countryCode => {
-        let i = votingStatuses.findIndex(element => element.countryCode == countryCode);
+        let i = CacheUtils.findEntryIndex(votingStatuses, countryCode, "countryCode");
     
-        if (i > 0) votingStatuses[i].status = status;
+        if (i >= 0) votingStatuses[i].status = status;
         else votingStatuses.push({countryCode : countryCode, status : status});
     });
 }
