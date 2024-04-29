@@ -11,7 +11,7 @@ const {
     getAllVotingStatuses, 
     clearTotalVotes,
     getWinnerCountry} = require('../controllers/countryController');
-const { authorizeJudge } = require('../utils/utils');
+const { VerificationUtils } = require('../utils/verificationUtils');
 
 countryRouter.get("/countries/runningCountry", getRunningCountry);
 
@@ -25,14 +25,14 @@ countryRouter.get("/countries/specific/:code", getSpecificCountry);
 
 countryRouter.get("/countries/winnerCountry", getWinnerCountry);
 
-countryRouter.post("/countries", authorizeJudge, createNewCountry);
+countryRouter.post("/countries", VerificationUtils.authorizeJudge, createNewCountry);
 
-countryRouter.put("/countries/:code", authorizeJudge, updateCountry);
+countryRouter.put("/countries/:code", VerificationUtils.authorizeJudge, updateCountry);
 
 countryRouter.patch("/countries/vote/:countrycode/:judgecode", updateJudgeVotes)
 
-countryRouter.patch("/countries/totalVotes/clear", authorizeJudge, clearTotalVotes);
+countryRouter.patch("/countries/totalVotes/clear", VerificationUtils.authorizeJudge, clearTotalVotes);
 
-countryRouter.delete("/countries/:code", authorizeJudge, deleteCountry);
+countryRouter.delete("/countries/:code", VerificationUtils.authorizeJudge, deleteCountry);
 
 module.exports = {countryRouter};

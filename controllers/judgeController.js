@@ -18,7 +18,8 @@ module.exports.getAllJudges = (req, res, next) => {
         else {
             res.status(404).json(ErrorResponse.create(response.errorCode, "Judges", null).toJSON());
         }
-    });
+    })
+    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
 };
 
 module.exports.getSpecificJudge = (req, res, next) => {
@@ -40,7 +41,8 @@ module.exports.getSpecificJudge = (req, res, next) => {
         else {
             res.status(404).json(ErrorResponse.create(response.errorCode, "Judge", code).toJSON());
         }
-    });
+    })
+    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
 };
 
 module.exports.createNewJudge = (req, res, next) => {
@@ -54,6 +56,7 @@ module.exports.createNewJudge = (req, res, next) => {
             res.status(409).json(ErrorResponse.create(response.errorCode, "Judge", judge.code).toJSON());
         }
     })
+    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
 };
 
 module.exports.updateJudge = (req, res, next) => {
@@ -68,7 +71,8 @@ module.exports.updateJudge = (req, res, next) => {
         else {
             res.status(409).json(ErrorResponse.create(response.errorCode, "Judge", code).toJSON());
         }
-    });
+    })
+    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
 };
 
 module.exports.deleteJudge = (req, res, next) => {
@@ -83,5 +87,6 @@ module.exports.deleteJudge = (req, res, next) => {
         else {
             res.status(409).json(ErrorResponse.create(response.errorCode, "Judge", code).toJSON());
         }
-    });
+    })
+    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
 };

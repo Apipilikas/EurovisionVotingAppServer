@@ -2,6 +2,10 @@ const { CountryRequests } = require("../requests/countryRequests");
 const { ErrorResponse } = require("../utils/responses");
 const { SocketIO } = require("../socketio");
 const { RunningCountryCache, VotingStatusesCache, CountriesCache } = require("../cache");
+const { VerificationUtils } = require("../utils/verificationUtils");
+
+const collectionInstanceName = "Country";
+const collectionInstanceNamePlural = "Countries";
 
 module.exports.getRunningCountry = (req, res, next) => {
     let runningCountry = RunningCountryCache.getRunningCountry();
@@ -21,7 +25,8 @@ module.exports.getSpecificVotingStatus = (req, res, next) => {
 
 module.exports.getAllCountries = (req, res, next) => {
     if (CountriesCache.isInitialized()) {
-        return res.status(200).json({countries : CountriesCache.getCountries()});
+        res.status(200).json({countries : CountriesCache.getCountries()});
+        return;
     }
 
     CountryRequests.getAllCountries()
@@ -36,6 +41,7 @@ module.exports.getAllCountries = (req, res, next) => {
             res.status(404).json(ErrorResponse.create(response.errorCode, "Judges", null).toJSON());
         }
     })
+    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
 };
 
 module.exports.getSpecificCountry = (req, res, next) => {
@@ -45,7 +51,8 @@ module.exports.getSpecificCountry = (req, res, next) => {
         let country = CountriesCache.findCountry(code);
 
         if (code != null) {
-            return res.status(200).json({country : country});
+            res.status(200).json({country : country});
+            return;
         }
     }
 
@@ -57,7 +64,8 @@ module.exports.getSpecificCountry = (req, res, next) => {
         else {
             res.status(404).json(ErrorResponse.create(response.errorCode, "Country", code).toJSON());
         }
-    });
+    })
+    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
 };
 
 module.exports.createNewCountry = (req, res, next) => {
@@ -70,7 +78,8 @@ module.exports.createNewCountry = (req, res, next) => {
         else {
             res.status(409).json(ErrorResponse.create(response.errorCode, "Country", req.body.code).toJSON());
         }
-    });
+    })
+    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
 };
 
 module.exports.updateCountry = (req, res, next) => {
@@ -85,13 +94,21 @@ module.exports.updateCountry = (req, res, next) => {
         else {
             res.status(409).json(ErrorResponse.create(response.errorCode, "Country", code).toJSON());
         }
-    });
+    })
+    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
 };
 
 module.exports.updateJudgeVotes = (req, res, next) => {
     let countryCode = req.params.countrycode;
     let judgeCode = req.params.judgecode;
     let points = parseInt(req.body.points);
+
+    let isCountryJudgeOriginCountry = VerificationUtils.isCountryJudgeOriginCountry(countryCode, judgeCode);
+
+    if (isCountryJudgeOriginCountry) {
+        res.status(409).json(ErrorResponse.create("CANNOT_VOTE_ORIGIN_COUNTRY", "Judge", judgeCode).toJSON());
+        return;
+    }
 
     CountryRequests.updateJudgeVotes(countryCode, judgeCode, points)
     .then(response => {
@@ -104,6 +121,7 @@ module.exports.updateJudgeVotes = (req, res, next) => {
             res.status(409).json(ErrorResponse.create(response.errorCode, "Country", countryCode).toJSON());
         }
     })
+    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
 };
 
 module.exports.clearTotalVotes = (req, res, next) => {
@@ -118,9 +136,10 @@ module.exports.clearTotalVotes = (req, res, next) => {
             res.status(200).send();
         }
         else {
-            res.status(409).json(ErrorResponse.create(response.errorCode, "Country", code));
+            res.status(409).json(ErrorResponse.create(response.errorCode, "Country", code).toJSON());
         }
     })
+    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
 }
 
 module.exports.deleteCountry = (req, res, next) => {
@@ -135,7 +154,8 @@ module.exports.deleteCountry = (req, res, next) => {
         else {
             res.status(409).json(ErrorResponse.create(response.errorCode, "Country", code).toJSON());
         }
-    });
+    })
+    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
 };
 
 module.exports.getWinnerCountry = (req, res, next) => {

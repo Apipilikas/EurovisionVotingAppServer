@@ -8,10 +8,11 @@ const {
     getAllOnlineJudges,
     setWinnerCountry,
     clearWinnerCountry} = require('../controllers/adminController');
-const { authorizeJudge } = require('../utils/utils');
+const { VerificationUtils } = require('../utils/verificationUtils');
 
 
-adminRouter.all("*", authorizeJudge);
+
+adminRouter.all("*", VerificationUtils.authorizeJudge);
 
 adminRouter.post("/admin/runningCountry/reset", resetRunningCountry);
 

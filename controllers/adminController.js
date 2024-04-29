@@ -1,4 +1,5 @@
 const { RunningCountryCache, VotingStatusesCache, JudgesCache, CountriesCache, SocketMappingCache } = require("../cache");
+const { ErrorResponse } = require("../utils/responses");
 
 
 module.exports.resetRunningCountry = (req, res, next) => {
@@ -17,7 +18,8 @@ module.exports.resetJudgesCache = (req, res, next) => {
         if (response) {
             res.status(200).send();
         }
-    });
+    })
+    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
 }
 
 module.exports.resetCountriesCache = (req, res, next) => {
@@ -27,6 +29,7 @@ module.exports.resetCountriesCache = (req, res, next) => {
             res.status(200).send();
         }
     })
+    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
 }
 
 module.exports.resetAllCaches = async (req, res, next) => {
