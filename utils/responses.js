@@ -18,17 +18,17 @@ class DAOResponse {
 
 class ErrorResponse {
     static ErrorMapping = new Map([
-        ["DEFAULT_MESSAGE", "A problem has been occured while trying to modify a %s"],
-        ["SERVER_ERROR", "An internal error has been occured while trying to fullfil a request. Error details: %s"],
-        ["CANNOT_GET_ALL_RECORDS", "A problem has been occured while fetching all %s."],
-        ["CANNOT_GET_SPECIFIC_RECORD", "A problem has been occured while fetching %s with code [%s]."],
+        ["DEFAULT_MESSAGE", "A problem has been occurred while trying to modify a %s"],
+        ["SERVER_ERROR", "An internal error has been occurred while trying to fullfil a request. Error details: %s"],
+        ["CANNOT_GET_ALL_RECORDS", "A problem has been occurred while fetching all %s."],
+        ["CANNOT_GET_SPECIFIC_RECORD", "A problem has been occurred while fetching %s with code [%s]."],
         ["RECORD_ALREADY_EXISTS", "%s with code [%s] already exists."],
         ["NO_RECORD_INSERTED", "%s with code [%s] has not been inserted."],
-        ["CANNOT_INSERT_RECORD", "A problem has been occured while inserting a %s with code [%s]."],
+        ["CANNOT_INSERT_RECORD", "A problem has been occurred while inserting a %s with code [%s]."],
         ["NO_RECORD_UPDATED", "%s with code [%s] has not been updated as it does not exist."],
-        ["CANNOT_UPDATE_RECORD", "A problem has been occured while updating a %s with code [%s]."],
+        ["CANNOT_UPDATE_RECORD", "A problem has been occurred while updating a %s with code [%s]."],
         ["NO_RECORD_DELETED", "%s with code %s has not been deleted as it has been already deleted or it does not exist."],
-        ["CANNOT_DELETE_RECORD", "A problem has been occured while deleting %s with code [%s]."],
+        ["CANNOT_DELETE_RECORD", "A problem has been occurred while deleting %s with code [%s]."],
         ["JUDGE_PERMISSION_DENIED", "%s with code [%s] has no permission to execute this action."],
         ["NO_JUDGE_CREDENTIALS_FOUND", "No authorization token found on headers request."],
         ["CANNOT_VOTE_ORIGIN_COUNTRY", "%s with code [%s] cannot vote ones origin country."]
