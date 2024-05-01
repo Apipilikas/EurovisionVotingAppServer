@@ -12,6 +12,13 @@ CountryRequests.getAllCountries = async function() {
     return response;
 };
 
+CountryRequests.getAllCountriesSortedByRunningOrder = async function() {
+    let response = await countryDAO.getAllSorted(undefined, undefined, "runningOrder");
+    response.data = Country.convertToArray(response.data);
+
+    return response;
+}
+
 CountryRequests.getSpecificCountry = function(code) {
     return countryDAO.getSpecific(code);
 };

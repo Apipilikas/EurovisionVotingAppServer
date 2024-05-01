@@ -1,5 +1,16 @@
 class Country {
-
+    /**
+     * Country constructor
+     * @param {string} code 
+     * @param {string} name 
+     * @param {boolean} qualified 
+     * @param {number} runningOrder 
+     * @param {object[]} votes 
+     * @param {number} totalVotes 
+     * @param {string[]} flagColors 
+     * @param {string} artist 
+     * @param {string} song 
+     */
     constructor(code, name, qualified, runningOrder, 
                 votes, totalVotes, flagColors, artist, song) {
         this.code = code;
@@ -13,12 +24,28 @@ class Country {
         this.song = song;
     }
 
+    /**
+     * Creates a new isntance of Country object
+     * @param {string} code 
+     * @param {string} name 
+     * @param {boolean} qualified 
+     * @param {number} runningOrder 
+     * @param {string[]} flagColors 
+     * @param {string} artist 
+     * @param {string} song 
+     * @returns {Country}
+     */
     static create(code, name, qualified, runningOrder, flagColors, artist, song) {
         let votes = {};
 
-        return new Country(code, name, qualified, runningOrder, votes, 0, flagColors, artist, song);
+        return new Country(code, name, qualified, parseInt(runningOrder), votes, 0, flagColors, artist, song);
     }
 
+    /**
+     * Converts json array to Country array
+     * @param {object[]} results 
+     * @returns {Country[]}
+     */
     static convertToArray(results) {
         let countriesArray = [];
     

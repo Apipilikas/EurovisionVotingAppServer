@@ -20,6 +20,10 @@ const ErrorCode = {
 }
 
 class DAO {
+    /**
+     * DAO constructor
+     * @param {string} collection 
+     */
     constructor(collection) {
         if (collection == Collection.Judge) {
             this.collection = mongodb.judges;
@@ -31,10 +35,20 @@ class DAO {
         }
     }
 
+    /**
+     * Creates the Document filter
+     * @param {string} id The key 
+     * @returns {object}
+     */
     getFilter(id) {
         return { [this.filter]: id };
     }
 
+    /**
+     * Gets all records
+     * @param {Filter<Document>} filterQuery The filter predicate
+     * @returns {Promise<DAOResponse>}
+     */
     async getAll(filterQuery = {}) {
         try {
             const result = await this.collection.find(filterQuery).toArray();
@@ -46,6 +60,36 @@ class DAO {
         return DAOResponse.createFailedResponse(ErrorCode.CANNOT_GET_ALL_RECORDS);
     }
 
+    /**
+     * Gets all records sorted
+     * @param {Filter<Document>} filterQuery The filter predicate
+     * @param {boolean} descending False for ascending and true for ascending
+     * @param  {...string} sortFields Fields to be sorted
+     * @returns {Promise<DAOResponse>}
+     */
+    async getAllSorted(filterQuery = {}, descending = false, ...sortFields) {
+        const descendingFilter = descending ? -1 : 1;
+        let sortFilter = {};
+
+        for (var sortField of sortFields) {
+            sortFilter[sortField] = descendingFilter;
+        }
+
+        try {
+            const result = await this.collection.find(filterQuery).sort(sortFilter).toArray();
+            
+            return DAOResponse.createSuccessfulResponse(result);
+        }
+        catch {}
+
+        return DAOResponse.createFailedResponse(ErrorCode.CANNOT_GET_ALL_RECORDS);
+    }
+
+    /**
+     * Gets a specific record
+     * @param {string} id The key of the record we want to get
+     * @returns {Promise<DAOResponse>}
+     */
     async getSpecific(id) {
         const filter = this.getFilter(id);
 
@@ -59,8 +103,14 @@ class DAO {
         return DAOResponse.createFailedResponse(ErrorCode.CANNOT_GET_SPECIFIC_RECORD);
     }
 
-    async insert(data, paramsToOmit = null) {
-        if (paramsToOmit != null) data = _.omit(data, paramsToOmit);
+    /**
+     * Inserts a new record
+     * @param {*} data Data we want to insert
+     * @param {*} fieldsToOmit Fields we want to omit and not store
+     * @returns {Promise<DAOResponse>}
+     */
+    async insert(data, fieldsToOmit = null) {
+        if (fieldsToOmit != null) data = _.omit(data, fieldsToOmit);
         
         if (data[this.filter] != null) {
             try {
@@ -81,6 +131,12 @@ class DAO {
         return DAOResponse.createFailedResponse(ErrorCode.CANNOT_INSERT_RECORD);
     }
 
+    /**
+     * Updates a record
+     * @param {*} id The key of the record we want to be updated
+     * @param {*} updatedData Data we want to be updated
+     * @returns 
+     */
     async update(id, updatedData) {
         const filter = this.getFilter(id);
         const updatedDoc = { $set: updatedData };
@@ -100,6 +156,11 @@ class DAO {
         return DAOResponse.createFailedResponse(ErrorCode.CANNOT_UPDATE_RECORD);
     }
 
+    /**
+     * Deletes a record
+     * @param {*} id The key of the record we want to be deleted
+     * @returns 
+     */
     async delete(id) {
         const filter = this.getFilter(id);
 

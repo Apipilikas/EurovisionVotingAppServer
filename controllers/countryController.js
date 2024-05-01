@@ -29,7 +29,7 @@ module.exports.getAllCountries = (req, res, next) => {
         return;
     }
 
-    CountryRequests.getAllCountries()
+    CountryRequests.getAllCountriesSortedByRunningOrder()
     .then(response => {
         if (response.success) {
             let countries = response.data;
