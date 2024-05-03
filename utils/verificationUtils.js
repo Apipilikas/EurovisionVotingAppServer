@@ -4,6 +4,13 @@ const { ErrorResponse } = require("./responses");
 
 var VerificationUtils = {};
 
+/**
+ * Checks if judge with a specific code has the authority to proceed. If true, continue to the next action. Otherwise, send [403] error code.
+ * @param {*} req Request
+ * @param {*} res Response
+ * @param {*} next Next
+ * @returns 
+ */
 VerificationUtils.authorizeJudge = (req, res, next) => {
     if (!req.headers.authorization) {
         return res.status(400).json(ErrorResponse.create("NO_JUDGE_CREDENTIALS_FOUND", null, null));
@@ -30,6 +37,12 @@ VerificationUtils.authorizeJudge = (req, res, next) => {
     })
 }
 
+/**
+ * Checks if a specific judge's origin country matches the given country's code.
+ * @param {string} countryCode 
+ * @param {string} judgeCode 
+ * @returns 
+ */
 VerificationUtils.isCountryJudgeOriginCountry = (countryCode, judgeCode) => {
     let judge = JudgesCache.findJudge(judgeCode);
 

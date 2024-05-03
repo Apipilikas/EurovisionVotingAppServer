@@ -25,7 +25,7 @@ class Country {
     }
 
     /**
-     * Creates a new isntance of Country object
+     * Creates a Country instance.
      * @param {string} code 
      * @param {string} name 
      * @param {boolean} qualified 
@@ -42,7 +42,7 @@ class Country {
     }
 
     /**
-     * Converts json array to Country array
+     * Converts json array to Country array.
      * @param {object[]} results 
      * @returns {Country[]}
      */

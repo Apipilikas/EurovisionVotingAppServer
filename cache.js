@@ -102,7 +102,7 @@ CountriesCache.setCountries = function(countriesData) {
 
 /**
  * Adds a new country to array.
- * @param {} country The new country object.
+ * @param {object} country The new country object.
  * @returns {boolean} True if addition was completed successfully. Otherwise, false.
  */
 CountriesCache.addCountry = function(country) {
@@ -111,8 +111,8 @@ CountriesCache.addCountry = function(country) {
 
 /**
  * Updates an existing country.
- * @param {string} code 
- * @param {object} updatedCountry 
+ * @param {string} code Country's code
+ * @param {object} updatedCountry Updated country's data
  * @returns {boolean} True if update was completed successfully. Otherwise, false.
  */
 CountriesCache.updateCountry = function(code, updatedCountry) {
@@ -145,7 +145,7 @@ CountriesCache.findCountryCodeByRunningOrder = function(runningOrder) {
 
 /**
  * Gets country that matches the given code.
- * @param {*} code Country's code
+ * @param {string} code Country's code
  * @returns {object} A country object. If country was not found, returns null.
  */
 CountriesCache.findCountry = function(code) {
@@ -221,7 +221,7 @@ CountriesCache.resetCountries = function() {
 
 /**
  * Deletes a country.
- * @param {*} code Country's code
+ * @param {string} code Country's code
  * @returns {object} The deleted country. If country was not found, returns null.
  */
 CountriesCache.deleteCountry = function(code) {
@@ -245,14 +245,26 @@ CountriesCache.isInitialized = function() {
 }
 
 // Winner country
+
+/**
+ * Gets winner country.
+ * @returns {object}
+ */
 CountriesCache.getWinnerCountry = function() {
     return winnerCountry;
 }
 
+/**
+ * Sets winner country.
+ * @param {string} countryCode Country's code 
+ */
 CountriesCache.setWinnerCountry = function(countryCode) {
     winnerCountry = CountriesCache.findCountry(countryCode);
 }
 
+/**
+ * Clears out winner country.
+ */
 CountriesCache.clearWinnerCountry = function() {
     winnerCountry = null;
 }
@@ -263,6 +275,10 @@ CountriesCache.clearWinnerCountry = function() {
 
 let isJudgesInitialized = false;
 
+/**
+ * Initializes judges cache.
+ * @returns {Promise<boolean>} A promise with result true if initialization was completed successfully. Otherwise false.
+ */
 JudgesCache.initJudges = async function() {
         return JudgeRequests.getAllJudges()
         .then(response => {
@@ -275,10 +291,18 @@ JudgesCache.initJudges = async function() {
         .catch(e => {return false});
 }
 
+/**
+ * Gets judges.
+ * @returns {object[]} An array of the judges.
+ */
 JudgesCache.getJudges = function() {
     return judges;
 }
 
+/**
+ * Sets judges.
+ * @param {object[]} judgesData 
+ */
 JudgesCache.setJudges = function(judgesData) {
     if (judges.length == judgesData.length) return;
 
@@ -287,18 +311,39 @@ JudgesCache.setJudges = function(judgesData) {
     JudgesCache.fillJudges(judgesData);
 }
 
+/**
+ * Adds a new judge to array.
+ * @param {object} judge The new judge object. 
+ * @returns {boolean} True if addition was completed successfully. Otherwise, false.
+ */
 JudgesCache.addJudge = function(judge) {
     return CacheUtils.addEntry(judges, judge);
 }
 
+/**
+ * Updates an existing judge.
+ * @param {string} code Judge's code
+ * @param {object} updatedJudge Updated judge's data
+ * @returns {boolean} True if update was completed successfully. Otherwise, false.
+ */
 JudgesCache.updateJudge = function(code, updatedJudge) {
     return CacheUtils.updateEntry(judges, code, "code", updatedJudge);
 }
 
+/**
+ * Gets judge that matches the given code.
+ * @param {string} code Judge's code
+ * @returns {object} A judge object. If judge was not found, returns null.
+ */
 JudgesCache.findJudge = function(code) {
     return CacheUtils.findEntry(judges, code, "code");
 }
 
+/**
+ * Gets judge's name that matches the given code.
+ * @param {string} code Judge's code
+ * @returns {object} A judge object. If judge was not found, returns null.
+ */
 JudgesCache.findJudgeNameByCode = function(code) {
     let judge = CacheUtils.findEntry(judges, code, "code");
     
@@ -306,6 +351,10 @@ JudgesCache.findJudgeNameByCode = function(code) {
     else return judge.name;
 }
 
+/**
+ * Fills judge array. Given data are enriched with online/offline information.
+ * @param {object[]} data 
+ */
 JudgesCache.fillJudges = function(data) {
     let onlineJudges = Array.from(socketMapping.values());
 
@@ -320,20 +369,36 @@ JudgesCache.fillJudges = function(data) {
     isJudgesInitialized = true;
 }
 
+/**
+ * Resets judges cache meaning clearing out cache and initializing it.
+ * @returns 
+ */
 JudgesCache.resetJudges = function() {
     clearJudges();
     return JudgesCache.initJudges();
 }
 
+/**
+ * Deletes a judge.
+ * @param {string} code Judge's code
+ * @returns {object} The deleted judge. If judge was not found, returns null.
+ */
 JudgesCache.deleteJudge = function(code) {
     return CacheUtils.deleteEntry(judges, code, "code");
 }
 
+/**
+ * Clears out judges cache.
+ */
 function clearJudges() {
     judges = [];
     isJudgesInitialized = false;
 }
 
+/**
+ * Gets if judges cache has been initialized.
+ * @returns {boolean} True if cache has been initialized. Otherwise, false.
+ */
 JudgesCache.isInitialized = function() {
     return isJudgesInitialized;
 }
@@ -342,6 +407,12 @@ JudgesCache.isInitialized = function() {
 
 //#region Voting Statuses
 
+/**
+ * Sets the voting status to countries. Object pushed in array has the following format:
+ * {countryCode : countryCodeValue, status : statusValue}
+ * @param {string[]} countryCodes Array of country codes
+ * @param {boolean} status Voting status
+ */
 VotingStatusesCache.setVotingStatuses = function(countryCodes, status) {
     countryCodes.forEach(countryCode => {
         let i = CacheUtils.findEntryIndex(votingStatuses, countryCode, "countryCode");
@@ -351,6 +422,11 @@ VotingStatusesCache.setVotingStatuses = function(countryCodes, status) {
     });
 }
 
+/**
+ * Gets voting status based on country code.
+ * @param {string} countryCode 
+ * @returns {string} OPEN if voting status is open for voting. Otherwise, returns CLOSED. If country code was not found in cache, returns CLOSED.
+ */
 VotingStatusesCache.getVotingStatusByCountryCode = function(countryCode) {
     if (countryCode == null) return "CLOSED";
 
@@ -360,15 +436,27 @@ VotingStatusesCache.getVotingStatusByCountryCode = function(countryCode) {
     else return votingStatus.status;
 }
 
+/**
+ * Gets voting status based on running order.
+ * @param {number} runningOrder 
+ * @returns {string} OPEN if voting status is open for voting. Otherwise, returns CLOSED. If country code was not found in cache, returns CLOSED.
+ */
 VotingStatusesCache.getVotingStatusByRunningOrder = function(runningOrder) {
     let countryCode = CountriesCache.findCountryCodeByRunningOrder(runningOrder);
     return VotingStatusesCache.getVotingStatusByCountryCode(countryCode);
 }
 
+/**
+ * Gets voting statuses cache.
+ * @returns {object[]} An array of the voting statuses.
+ */
 VotingStatusesCache.getVotingStatuses = function() {
     return votingStatuses;
 }
 
+/**
+ * Resets / Clears out voting statuses cache.
+ */
 VotingStatusesCache.resetVotingStatuses = function() {
     votingStatuses = [];
 }
@@ -377,6 +465,12 @@ VotingStatusesCache.resetVotingStatuses = function() {
 
 //#region 
 
+/**
+ * Adds a new socket ID. Socket mapping has key the socket ID and value the judge's code.
+ * Adding a socket ID leads to updating the mapping judge with the online information.
+ * @param {string} socketID Established socket ID
+ * @param {string} judgeCode Judge's code
+ */
 SocketMappingCache.addSocketID = function(socketID, judgeCode) {
     socketMapping.set(socketID, judgeCode);
     
@@ -385,6 +479,10 @@ SocketMappingCache.addSocketID = function(socketID, judgeCode) {
     console.log(socketMapping)
 }
 
+/**
+ * Removes socket ID. Removing a socket ID leads to updating the mapping Judge with the offline information.
+ * @param {string} socketID Disconnected socket ID
+ */
 SocketMappingCache.removeSocketID = function(socketID) {
     let judgeCode = socketMapping.get(socketID);
 
@@ -395,6 +493,10 @@ SocketMappingCache.removeSocketID = function(socketID) {
     console.log(socketMapping);
 }
 
+/**
+ * Gets online judge codes.
+ * @returns {string[]} An array of the online judge codes.
+ */
 SocketMappingCache.getOnlineJudgeCodes = function() {
     return Array.from(socketMapping.values());
 }
