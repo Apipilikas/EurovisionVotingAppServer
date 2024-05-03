@@ -26,18 +26,33 @@ let socketMapping = new Map();
 
 //#region Running Country
 
+/**
+ * Sets running country's order.
+ * @param {number} value 
+ */
 RunningCountryCache.setRunningCountry = function(value) {
     runningCountry = value;
 }
 
+/**
+ * Gets running country's order.
+ * @returns {number} Running country order
+ */
 RunningCountryCache.getRunningCountry = function() {
     return runningCountry;
 }
 
+/**
+ * Gets running country's code.
+ * @returns {string} Country's code
+ */
 RunningCountryCache.getRunningCountryCode = function() {
     return CountriesCache.findCountryCodeByRunningOrder(runningCountry);
 }
 
+/**
+ * Resets running country's order.
+ */
 RunningCountryCache.resetRunningCountry = function() {
     runningCountry = 0;
 }
@@ -48,6 +63,10 @@ RunningCountryCache.resetRunningCountry = function() {
 
 let isCountriesInitialized = false;
 
+/**
+ * Initializes countries cache.
+ * @returns {Promise<boolean>} A promise with result true if initialization was completed successfully. Otherwise false.
+ */
 CountriesCache.initCountries = async function() {
 
     return CountryRequests.getAllCountries()
@@ -61,10 +80,18 @@ CountriesCache.initCountries = async function() {
     .catch(e => {return false});
 }
 
+/**
+ * Gets countries.
+ * @returns {object[]} An array of the countries.
+ */
 CountriesCache.getCountries = function() {
     return countries;
 }
 
+/**
+ * Sets countries.
+ * @param {object[]} countriesData 
+ */
 CountriesCache.setCountries = function(countriesData) {
     if (countries.length == countriesData.length) return;
 
@@ -73,14 +100,30 @@ CountriesCache.setCountries = function(countriesData) {
     CountriesCache.fillCountries(countriesData);
 }
 
+/**
+ * Adds a new country to array.
+ * @param {} country The new country object.
+ * @returns {boolean} True if addition was completed successfully. Otherwise, false.
+ */
 CountriesCache.addCountry = function(country) {
     return CacheUtils.addEntry(countries, country);
 }
 
+/**
+ * Updates an existing country.
+ * @param {string} code 
+ * @param {object} updatedCountry 
+ * @returns {boolean} True if update was completed successfully. Otherwise, false.
+ */
 CountriesCache.updateCountry = function(code, updatedCountry) {
     return CacheUtils.updateEntry(countries, code, "code", updatedCountry);
 }
 
+/**
+ * Gets country that matches the given running order.
+ * @param {number} runningOrder The running order 
+ * @returns {object} A country object. If country was not found, returns null.
+ */
 CountriesCache.findCountryByRunningOrder = function(runningOrder) {
     let country = countries.find(element => _.parseInt(element.runningOrder) == _.parseInt(runningOrder));
     
@@ -88,6 +131,11 @@ CountriesCache.findCountryByRunningOrder = function(runningOrder) {
     else return country;
 }
 
+/**
+ * Gets country code that matches the given running order.
+ * @param {number} runningOrder The running order
+ * @returns {string} The code of the country. If country was not found, returns null.
+ */
 CountriesCache.findCountryCodeByRunningOrder = function(runningOrder) {
     let country = CountriesCache.findCountryByRunningOrder(runningOrder);
     
@@ -95,10 +143,20 @@ CountriesCache.findCountryCodeByRunningOrder = function(runningOrder) {
     else return country.code;
 }
 
+/**
+ * Gets country that matches the given code.
+ * @param {*} code Country's code
+ * @returns {object} A country object. If country was not found, returns null.
+ */
 CountriesCache.findCountry = function(code) {
     return CacheUtils.findEntry(countries, code, "code");
 }
 
+/**
+ * Gets country's name that matches the given code.
+ * @param {string} code Country's code
+ * @returns {object} A country object. If country was not found, returns null.
+ */
 CountriesCache.findCountryNameByCode = function(code) {
     let country = CountriesCache.findCountry(code);
 
@@ -106,6 +164,10 @@ CountriesCache.findCountryNameByCode = function(code) {
     else return country.name;
 }
 
+/**
+ * Fills country array.
+ * @param {object[]} data 
+ */
 CountriesCache.fillCountries = function(data) {
     data.forEach(country => {
         // TODO: merge voting statuses with country
@@ -114,6 +176,12 @@ CountriesCache.fillCountries = function(data) {
     isCountriesInitialized = true;
 }
 
+/**
+ * Sets vote to a specific country for a specific judge.
+ * @param {string} judgeCode Judge who voted
+ * @param {string} countryCode Country that judge voted
+ * @param {number} points 
+ */
 CountriesCache.setVotes = function(judgeCode, countryCode, points) {
     let country = CountriesCache.findCountry(countryCode);
 
@@ -130,6 +198,11 @@ CountriesCache.setVotes = function(judgeCode, countryCode, points) {
     }
 }
 
+/**
+ * Gets country's total votes.
+ * @param {string} code 
+ * @returns {number} Country's total votes. If country was not found, returns 0.
+ */
 CountriesCache.getTotalVotes = function(code) {
     let country = CountriesCache.findCountry(code);
     
@@ -137,20 +210,36 @@ CountriesCache.getTotalVotes = function(code) {
     else return country.totalVotes;
 }
 
+/**
+ * Resets countries cache meaning clearing out cache and initializing it.
+ * @returns {Promise<boolean>} A promise with result true if initialization was completed successfully. Otherwise false.
+ */
 CountriesCache.resetCountries = function() {
     countries = [];
     return CountriesCache.initCountries();
 }
 
+/**
+ * Deletes a country.
+ * @param {*} code Country's code
+ * @returns {object} The deleted country. If country was not found, returns null.
+ */
 CountriesCache.deleteCountry = function(code) {
     return CacheUtils.deleteEntry(countries, code, "code");
 }
 
+/**
+ * Clears out countries cache.
+ */
 CountriesCache.clearCountries = function() {
     countries = [];
     isCountriesInitialized = false;
 }
 
+/**
+ * Gets if countries cache has been initialized.
+ * @returns {boolean} True if cache has been initialized. Otherwise, false.
+ */
 CountriesCache.isInitialized = function() {
     return isCountriesInitialized;
 }
