@@ -20,7 +20,7 @@ CacheUtils.addEntry = function(array, entry) {
 }
 
 /**
- * Gets the first entry found that id matches the given filter.
+ * Gets the first entry found whose id matches the given filter.
  * @param {object[]} array 
  * @param {string} id 
  * @param {string} filter The object property name that will match with the id.
@@ -31,7 +31,7 @@ CacheUtils.findEntry = function(array, id, filter) {
 }
 
 /**
- * Gets the index of the first entry found that id matches the given filter.
+ * Gets the index of the first entry found whose id matches the given filter.
  * @param {object[]} array 
  * @param {string} id 
  * @param {string} filter The object property name that will match with the id.
@@ -42,7 +42,7 @@ CacheUtils.findEntryIndex = function(array, id, filter) {
 }
 
 /**
- * Updates the first entry found that id matches the given filter.
+ * Updates the first entry found whose id matches the given filter.
  * @param {object[]} array 
  * @param {string} id 
  * @param {string} filter The object property name that will match with the id.
@@ -66,7 +66,7 @@ CacheUtils.updateEntry = function(array, id, filter, updatedEntry) {
 }
 
 /**
- * Deletes entry that id matches the given filter.
+ * Deletes entry whose id matches the given filter.
  * @param {object[]} array 
  * @param {string} id 
  * @param {string} filter 
