@@ -69,7 +69,7 @@ let isCountriesInitialized = false;
  */
 CountriesCache.initCountries = async function() {
 
-    return CountryRequests.getAllCountries()
+    return CountryRequests.getAllCountriesSortedByRunningOrder()
     .then(response => {
         if (response.success) {
             CountriesCache.fillCountries(response.data);
