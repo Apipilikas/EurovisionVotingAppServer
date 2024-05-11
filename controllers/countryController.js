@@ -124,7 +124,7 @@ module.exports.updateJudgeVotes = (req, res, next) => {
     .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
 };
 
-module.exports.clearTotalVotes = (req, res, next) => {
+module.exports.clearCountryTotalVotes = (req, res, next) => {
     let code = req.params.code;
 
     let data = {votes : new Object(), totalVotes : 0};
