@@ -1,0 +1,28 @@
+{
+  "name": "eurovisionvotingapp",
+  "version": "1.0.0",
+  "description": "eurovision voting app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "eurovision",
+    "voting",
+    "app"
+  ],
+  "author": "Apipilikas",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.1",
+    "express": "^4.18.2",
+    "lodash": "^4.17.21",
+    "mongodb": "^5.5.0",
+    "socket.io": "^4.7.2",
+    "util": "^0.12.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+}
