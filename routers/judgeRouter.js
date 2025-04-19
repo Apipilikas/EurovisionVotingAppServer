@@ -4,17 +4,21 @@ const {
     getSpecificJudge, 
     createNewJudge, 
     updateJudge, 
-    deleteJudge } = require('../controllers/judgeController');
-const { VerificationUtils } = require('../utils/verificationUtils');
+    deleteJudge, 
+    fetchData} = require('../controllers/judgeController');
+const { fetchVotingSchemaData } = require('../schemas/votingSchema');
+const { VerificationUtils } = require('../utils/controllerUtils');
+
+judgeRouter.all("*", fetchVotingSchemaData);
 
 judgeRouter.get("/judges/all", getAllJudges);
 
 judgeRouter.get("/judges/specific/:code", getSpecificJudge);
 
-judgeRouter.post("/judges", VerificationUtils.authorizeJudge, createNewJudge);
+judgeRouter.post("/judges", createNewJudge);
 
-judgeRouter.put("/judges/:code", VerificationUtils.authorizeJudge, updateJudge);
+judgeRouter.put("/judges/:code", updateJudge);
 
-judgeRouter.delete("/judges/:code", VerificationUtils.authorizeJudge, deleteJudge);
+judgeRouter.delete("/judges/:code", deleteJudge);
 
 module.exports = {judgeRouter};

@@ -1,92 +1,50 @@
-const { JudgesCache } = require("../cache");
-const { JudgeRequests } = require("../requests/judgeRequests");
-const { ErrorResponse } = require("../utils/responses");
+const { Record } = require("db-model-handler");
+const { votingSchema } = require("../schemas/votingSchema");
+const { ServerErrorResponse } = require("../utils/responses/serverErrorResponse");
+const { ControllerUtils } = require("../utils/controllerUtils");
+
+let schema = votingSchema;
+let modelName = votingSchema.judgeModel.modelName;
 
 module.exports.getAllJudges = (req, res, next) => {
-    if (JudgesCache.isInitialized()) {
-        return res.status(200).json({judges : JudgesCache.getJudges()});
+    try {
+        res.status(200).json({judges : schema.judgeModel.serializeForDisplay()});
     }
-
-    JudgeRequests.getAllJudges()
-    .then(response => {
-        if (response.success) {
-            let judges = response.data;
-            JudgesCache.setJudges(judges);
-            
-            res.status(200).json({judges : judges});
-        }
-        else {
-            res.status(404).json(ErrorResponse.create(response.errorCode, "Judges", null).toJSON());
-        }
-    })
-    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
+    catch(e) {
+        res.status(404).json(ServerErrorResponse.handleGetAllError(e, modelName));
+    }
 };
 
 module.exports.getSpecificJudge = (req, res, next) => {
     let code = req.params.code;
-
-    if (JudgesCache.isInitialized()) {
-        let judge = JudgesCache.findJudge(code);
-
-        if (judge != null) {
-            return res.status(200).json({judge : judge});
-        }
-    }
-
-    JudgeRequests.getSpecificJudge(code)
-    .then(response => {
-        if (response.success) {
-            res.status(200).json({judge : response.data});
+    
+    try {
+        let record = schema.judgeModel.records.findByPrimaryKey(code);
+    
+        if (record != null) {
+            res.status(200).json({judge : record.serializeForDisplay()});
         }
         else {
-            res.status(404).json(ErrorResponse.create(response.errorCode, "Judge", code).toJSON());
+            res.status(404).json(ServerErrorResponse.createNotFoundOnGetError(modelName, code));
         }
-    })
-    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
+    }
+    catch(e) {
+        res.status(404).json(ServerErrorResponse.handleGetSpecificError(e, modelName, code));
+    }
 };
 
 module.exports.createNewJudge = (req, res, next) => {
-    JudgeRequests.createNewJudge(req.body)
-    .then(response => {
-        if (response.success) {
-            JudgesCache.addJudge(req.body);
-            res.status(201).send();   
-        }
-        else {
-            res.status(409).json(ErrorResponse.create(response.errorCode, "Judge", judge.code).toJSON());
-        }
-    })
-    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
+    ControllerUtils.createRecord(req, res, schema.judgeModel);
 };
 
 module.exports.updateJudge = (req, res, next) => {
     let code = req.params.code;
 
-    JudgeRequests.updateJudge(code, req.body)
-    .then(response => {
-        if (response.success) {
-            JudgesCache.updateJudge(code, req.body);
-            res.status(200).send();
-        }
-        else {
-            res.status(409).json(ErrorResponse.create(response.errorCode, "Judge", code).toJSON());
-        }
-    })
-    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
+    ControllerUtils.updateRecord(req, res, schema.judgeModel, code);
 };
 
 module.exports.deleteJudge = (req, res, next) => {
     let code = req.params.code;
 
-    JudgeRequests.deleteJudge(code)
-    .then(response => {
-        if (response.success) {
-            JudgesCache.deleteJudge(code);
-            res.status(204).send();
-        }
-        else {
-            res.status(409).json(ErrorResponse.create(response.errorCode, "Judge", code).toJSON());
-        }
-    })
-    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
+    ControllerUtils.deleteRecord(req, res, schema.judgeModel, code);
 };

@@ -1,6 +1,6 @@
 const _ = require("lodash");
-const { JudgeRequests } = require("./requests/judgeRequests");
-const { CountryRequests } = require("./requests/countryRequests");
+// const { JudgeRequests } = require("./requests/judgeRequests");
+// const { CountryRequests } = require("./requests/countryRequests");
 const { CacheUtils } = require("./utils/cacheUtils");
 
 //#region Namespaces

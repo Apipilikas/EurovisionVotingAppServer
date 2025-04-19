@@ -4,14 +4,15 @@ const {
     getSpecificCountry, 
     createNewCountry, 
     updateCountry, 
-    updateJudgeVotes, 
     deleteCountry, 
     getRunningCountry, 
     getSpecificVotingStatus, 
     getAllVotingStatuses, 
     getWinnerCountry,
-    clearCountryTotalVotes} = require('../controllers/countryController');
-const { VerificationUtils } = require('../utils/verificationUtils');
+    clearCountryTotalVotes,
+    recalculateCountryTotalVotes,
+    getAllCountriesWithVotes,
+    getSpecificCountryWithVotes} = require('../controllers/countryController');
 
 countryRouter.get("/countries/runningCountry", getRunningCountry);
 
@@ -21,18 +22,22 @@ countryRouter.get("/countries/votingStatuses/:countrycode", getSpecificVotingSta
 
 countryRouter.get("/countries/all", getAllCountries);
 
+countryRouter.get("/countries/votes/all", getAllCountriesWithVotes);
+
 countryRouter.get("/countries/specific/:code", getSpecificCountry);
+
+countryRouter.get("/countries/votes/specific/:code", getSpecificCountryWithVotes);
 
 countryRouter.get("/countries/winnerCountry", getWinnerCountry);
 
-countryRouter.post("/countries", VerificationUtils.authorizeJudge, createNewCountry);
+countryRouter.post("/countries", createNewCountry);
 
-countryRouter.put("/countries/:code", VerificationUtils.authorizeJudge, updateCountry);
+countryRouter.put("/countries/:code", updateCountry);
 
-countryRouter.patch("/countries/vote/:countrycode/:judgecode", updateJudgeVotes)
+countryRouter.patch("/countries/totalVotes/clear/:code", clearCountryTotalVotes);
 
-countryRouter.patch("/countries/totalVotes/clear/:code", VerificationUtils.authorizeJudge, clearCountryTotalVotes);
+countryRouter.patch("/countries/totalVotes/recalculate/:code", recalculateCountryTotalVotes);
 
-countryRouter.delete("/countries/:code", VerificationUtils.authorizeJudge, deleteCountry);
+countryRouter.delete("/countries/:code", deleteCountry);
 
 module.exports = {countryRouter};

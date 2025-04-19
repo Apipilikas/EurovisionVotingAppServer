@@ -1,44 +1,40 @@
-const { RunningCountryCache, VotingStatusesCache, JudgesCache, CountriesCache, SocketMappingCache } = require("../cache");
-const { ErrorResponse } = require("../utils/responses");
+const { CountriesCache, SocketMappingCache } = require("../cache");
+const { votingSchema } = require("../schemas/votingSchema");
+const { ServerErrorResponse } = require("../utils/responses/serverErrorResponse");
 
 
 module.exports.resetRunningCountry = (req, res, next) => {
-    RunningCountryCache.resetRunningCountry();
-    res.status(200).send();
+    try {
+        votingSchema.runningCountry = 0;
+        res.status(204).send();
+    }
+    catch(e) {
+        res.status(500).json(ServerErrorResponse.createServerError(e.message));
+    }
 }
 
-module.exports.resetVotingStatusCache = (req, res, next) => {
-    VotingStatusesCache.resetVotingStatuses();
-    res.status(200).send();
-}
-
-module.exports.resetJudgesCache = (req, res, next) => {
-    JudgesCache.resetJudges()
-    .then(response => {
-        if (response) {
-            res.status(200).send();
+module.exports.resetVotingStatus = (req, res, next) => {
+    try {
+        for (let record of votingSchema.countryModel.records) {
+            record.setValue("votingStatus", votingSchema.countryModel.votingStatusField.defaultValue);
+            record.acceptChanges();
         }
-    })
-    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
-}
-
-module.exports.resetCountriesCache = (req, res, next) => {
-    CountriesCache.resetCountries()
-    .then(response => {
-        if (response) {
-            res.status(200).send();
-        }
-    })
-    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
+        res.status(204).send();
+    }
+    catch(e) {
+        res.status(500).json(ServerErrorResponse.createServerError(e.message));
+    }
 }
 
 module.exports.resetAllCaches = async (req, res, next) => {
-    VotingStatusesCache.resetVotingStatuses();
-    let judgesResponse = await JudgesCache.resetJudges();
-    let countriesResponse = await CountriesCache.resetCountries();
-    
-    if (judgesResponse && countriesResponse) {
-        res.status(200).send();
+    try {
+        votingSchema.clearData();
+        await votingSchema.fetchData();
+
+        res.status(204).send();
+    }
+    catch(e) {
+        res.status(500).json(ServerErrorResponse.createServerError(e.message));
     }
 }
 
