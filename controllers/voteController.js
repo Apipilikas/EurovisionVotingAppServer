@@ -107,12 +107,12 @@ module.exports.updateVotes = (req, res, next) => {
 
         // Check country voting status
 
-        // if (countryRecord?.getValue("votingStatus") != "OPEN") {
-        //     let code = "COUNTRY_WITH_NOT_OPEN_VOTING_STATUS_ERROR";
-        //     let description = `Judge with code [${judgeCode}] cannot vote country with code [${countryCode}] as its voting status is not [OPEN].`;
-        //     res.status(409).json(new ServerErrorResponse(code, description));
-        //     return;
-        // }
+        if (countryRecord?.getValue("votingStatus") != "OPEN") {
+            let code = "COUNTRY_WITH_NOT_OPEN_VOTING_STATUS_ERROR";
+            let description = `Judge with code [${judgeCode}] cannot vote country with code [${countryCode}] as its voting status is not [OPEN].`;
+            res.status(409).json(new ServerErrorResponse(code, description));
+            return;
+        }
 
         let voteRecord = votingSchema.voteModel.records.findByPrimaryKey(countryCode, judgeCode);
 

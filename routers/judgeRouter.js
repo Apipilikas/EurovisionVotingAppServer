@@ -5,7 +5,9 @@ const {
     createNewJudge, 
     updateJudge, 
     deleteJudge, 
-    fetchData} = require('../controllers/judgeController');
+    fetchData,
+    registerJudge,
+    activateJudge} = require('../controllers/judgeController');
 const { fetchVotingSchemaData } = require('../schemas/votingSchema');
 const { VerificationUtils } = require('../utils/controllerUtils');
 
@@ -16,6 +18,10 @@ judgeRouter.get("/judges/all", getAllJudges);
 judgeRouter.get("/judges/specific/:code", getSpecificJudge);
 
 judgeRouter.post("/judges", createNewJudge);
+
+judgeRouter.post("/judges/register/", registerJudge);
+
+judgeRouter.patch("/judges/activate", activateJudge);
 
 judgeRouter.put("/judges/:code", updateJudge);
 

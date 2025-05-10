@@ -27,12 +27,12 @@ class CountryModel extends DAOModel {
         let recordsArray = [];
         for (let record of this.records) {
             let obj = record.serializeForDisplay();
-            let childRecordsArray = [];
+            let votes = {};
 
             let childRecords = record.getChildRecords("FK_Country_Vote");
-            childRecords?.forEach(childRecord => childRecordsArray.push(this.#cloneVote(childRecord.serializeForDisplay())));
+            childRecords?.forEach(childRecord => votes[childRecord.getValue("judgeCode")] = childRecord.getValue("points"));
 
-            obj.votes = childRecordsArray;
+            obj.votes = votes;
             recordsArray.push(obj);
         }
 

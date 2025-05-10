@@ -1,3 +1,4 @@
+const { UUIDUtils } = require("../../utils/uuidUtils");
 const { DAOModel } = require("./daoModel");
 
 class JudgeModel extends DAOModel {
@@ -16,6 +17,14 @@ class JudgeModel extends DAOModel {
         this.policyCodeField = this.pushNewField("policyCode", String, false, false);
         this.policyCodeField.nullable = true;
         this.policyCodeField.defaultValue = null;
+        this.activeField = this.pushNewField("active", Boolean, false, false);
+    }
+    
+    /**
+     * @override
+     */
+    pushNewRecord(code, name, originCountry, policyCode, active) {
+        return super.pushNewRecord(code, name, originCountry, false, false, policyCode, active);
     }
 
     getJudgeOriginCountry(judgeCode) {
@@ -31,6 +40,15 @@ class JudgeModel extends DAOModel {
     isJudgeAuthorized(judgeCode) {
         let record = this.records.findByPrimaryKey(judgeCode);
         return record?.getValue(this.adminField.fieldName);
+    }
+
+    createUniqueCode(judgeName = "") {
+        const maxPrefixLength = 2;
+
+        let prefixLength = Math.min(judgeName.length, maxPrefixLength);
+        let uniqueID = UUIDUtils.generateUUID().substring(0, 5 - prefixLength);
+
+        return judgeName.substring(0, prefixLength) + uniqueID;
     }
 }
 
