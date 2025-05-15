@@ -486,11 +486,9 @@ SocketMappingCache.addSocketID = function(socketID, judgeCode) {
 SocketMappingCache.removeSocketID = function(socketID) {
     let judgeCode = socketMapping.get(socketID);
 
-    let judgeData = {online : false};
-    JudgesCache.updateJudge(judgeCode, judgeData);
-
     socketMapping.delete(socketID);
-    console.log(socketMapping);
+    
+    return judgeCode;
 }
 
 /**

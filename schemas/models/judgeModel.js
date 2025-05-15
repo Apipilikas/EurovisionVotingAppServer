@@ -19,13 +19,6 @@ class JudgeModel extends DAOModel {
         this.policyCodeField.defaultValue = null;
         this.activeField = this.pushNewField("active", Boolean, false, false);
     }
-    
-    /**
-     * @override
-     */
-    pushNewRecord(code, name, originCountry, policyCode, active) {
-        return super.pushNewRecord(code, name, originCountry, false, false, policyCode, active);
-    }
 
     getJudgeOriginCountry(judgeCode) {
         let record = this.records.findByPrimaryKey(judgeCode);

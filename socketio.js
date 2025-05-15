@@ -19,13 +19,28 @@ var SocketIO = (
                 socket.emit("hi", "hello");
 
                 socket.on("connecting", (credentials) => {
-                    console.log("Connecting " + socket.id + " with judge code " + credentials.judgeCode);
-                    SocketMappingCache.addSocketID(socket.id, credentials.judgeCode);
+                    const judgeCode = credentials.judgeCode;
+                    console.log("Connecting " + socket.id + " with judge code " + judgeCode);
+                    SocketMappingCache.addSocketID(socket.id, judgeCode);
+
+                    let record = votingSchema.judgeModel.records.findByPrimaryKey(judgeCode);
+
+                    if (record != null) {
+                        record.setValue("online", true);
+                        record.acceptChanges();
+                    }
                 });
 
                 socket.on("disconnect", () => {
                     console.log("Disconnect " + socket.id);
-                    SocketMappingCache.removeSocketID(socket.id);
+                    let judgeCode = SocketMappingCache.removeSocketID(socket.id);
+
+                    let record = votingSchema.judgeModel.records.findByPrimaryKey(judgeCode);
+
+                    if (record != null) {
+                        record.setValue("online", false);
+                        record.acceptChanges();
+                    }
                 });                
 
                 socket.on("nextCountry", (nextRunningCountry) => {

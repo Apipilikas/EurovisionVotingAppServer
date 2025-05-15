@@ -57,7 +57,7 @@ module.exports.registerJudge = (req, res, next) => {
         let {name, email, originCountry} = req.body;
 
         let code = votingSchema.judgeModel.createUniqueCode(name);
-        let record = votingSchema.judgeModel.pushNewRecord(code, name, originCountry, null, false);
+        let record = votingSchema.judgeModel.pushNewRecord(code, name, originCountry, false, false, null, false);
         
         let activationToken = UUIDUtils.generateUUID();
         record.addProperty(activationToken_ID, activationToken);
