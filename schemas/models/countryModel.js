@@ -38,13 +38,6 @@ class CountryModel extends DAOModel {
 
         return recordsArray;        
     }
-
-    #cloneVote(obj) {
-        return {
-            judgeCode : obj.judgeCode,
-            points : obj.points
-        };
-    }
 }
 
 module.exports = {CountryModel};

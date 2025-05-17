@@ -167,28 +167,58 @@ module.exports.recalculateCountryTotalVotes = async (req, res, next) => {
     
         if (records.length > 0) {
             votingSchema.countryModel.totalVotesField.nonStored = false;
-            let parentRecord = records[0].getParentRecord(VotingSchema.FK_Country_Vote);
 
-            let totalVotes = 0;
-
-            for (let record of records) {
-                totalVotes += record.getValue("points");
+            try {
+                let parentRecord = records[0].getParentRecord(VotingSchema.FK_Country_Vote);
+    
+                let totalVotes = 0;
+    
+                for (let record of records) {
+                    totalVotes += record.getValue("points");
+                }
+                
+                parentRecord.setValue("totalVotes", totalVotes);
+    
+                parentRecord.saveAndApplyChanges().then(response => {
+                    if (response.success) {
+                        res.status(204).send();
+                    }
+                    else {
+                        res.status(409).json(ServerErrorResponse.createDefUpdateError(response.errorDescription, modelName, code));
+                    }
+                })
+                .catch((e) => {res.status(500).json(ServerErrorResponse.createServerError(e.message))});
             }
-            
-            parentRecord.setValue("totalVotes", totalVotes);
-
-            parentRecord.saveAndApplyChanges().then(response => {
-                if (response.success) {
-                    res.status(204).send();
-                }
-                else {
-                    res.status(409).json(ServerErrorResponse.createDefUpdateError(response.errorDescription, modelName, code));
-                }
-            })
-            .catch((e) => {res.status(500).json(ServerErrorResponse.createServerError(e.message))});
+            finally {
+                votingSchema.countryModel.totalVotesField.nonStored = true;
+            }
         }
         else {
-            res.status(204).send();
+            let record = votingSchema.countryModel.records.findByPrimaryKey(code);
+
+            if (record != null) {
+                votingSchema.countryModel.totalVotesField.nonStored = false;
+
+                try {
+                    record.setValue("totalVotes", 0);
+
+                    record.saveAndApplyChanges().then(response => {
+                    if (response.success) {
+                        res.status(204).send();
+                    }
+                    else {
+                        res.status(409).json(ServerErrorResponse.createDefUpdateError(response.errorDescription, modelName, code));
+                    }
+                })
+                .catch((e) => {res.status(500).json(ServerErrorResponse.createServerError(e.message))});
+                }
+                finally {
+                    votingSchema.countryModel.totalVotesField.nonStored = true;
+                }
+            }
+            else {
+                res.status(204).send();
+            }
         }
 
     }
