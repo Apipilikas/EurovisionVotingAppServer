@@ -1,26 +1,18 @@
 const adminRouter = require('express').Router();
 const { 
     resetRunningCountry, 
-    resetVotingStatusCache, 
-    resetJudgesCache, 
-    resetCountriesCache, 
+    resetVotingStatus, 
     resetAllCaches, 
     getAllOnlineJudges,
     setWinnerCountry,
     clearWinnerCountry} = require('../controllers/adminController');
-const { VerificationUtils } = require('../utils/verificationUtils');
+const { ControllerUtils } = require('../utils/controllerUtils');
 
-
-
-adminRouter.all("*", VerificationUtils.authorizeJudge);
+adminRouter.all("/admin*", ControllerUtils.authorizeJudge);
 
 adminRouter.post("/admin/runningCountry/reset", resetRunningCountry);
 
-adminRouter.post("/admin/cache/votingStatus/reset", resetVotingStatusCache);
-
-adminRouter.post("/admin/cache/judges/reset", resetJudgesCache);
-
-adminRouter.post("/admin/cache/countries/reset", resetCountriesCache);
+adminRouter.post("/admin/votingStatus/reset", resetVotingStatus);
 
 adminRouter.post("/admin/cache/reset", resetAllCaches);
 

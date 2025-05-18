@@ -1,161 +1,240 @@
-const { CountryRequests } = require("../requests/countryRequests");
-const { ErrorResponse } = require("../utils/responses");
-const { SocketIO } = require("../socketio");
-const { RunningCountryCache, VotingStatusesCache, CountriesCache } = require("../cache");
-const { VerificationUtils } = require("../utils/verificationUtils");
+const { VotingStatusesCache, CountriesCache } = require("../cache");
+const { ControllerUtils } = require("../utils/controllerUtils");
+const { votingSchema, VotingSchema } = require("../schemas/votingSchema");
+const { DAO } = require("../dao");
+const { ServerErrorResponse } = require("../utils/responses/serverErrorResponse");
 
-const collectionInstanceName = "Country";
-const collectionInstanceNamePlural = "Countries";
+let schema = votingSchema;
+const modelName = schema.countryModel.modelName;
 
 module.exports.getRunningCountry = (req, res, next) => {
-    let runningCountry = RunningCountryCache.getRunningCountry();
-    let runningCountryCode = RunningCountryCache.getRunningCountryCode();
-    let votingStatus = VotingStatusesCache.getVotingStatusByCountryCode(runningCountryCode);
+    let runningCountry = schema.runningCountry;
+    let record = schema.countryModel.records.find(rec => rec.getValue("runningOrder") == runningCountry);
 
-    res.status(200).json({runningCountry : runningCountry, runningCountryCode : runningCountryCode, votingStatus : votingStatus});
+    res.status(200).json({currentRunningOrder : runningCountry, runningCountry : record?.serializeForDisplay()});
 };
 
 module.exports.getAllVotingStatuses = (req, res, next) => {
+    // OBSOLETE
     res.status(200).json({votingStatuses : VotingStatusesCache.getVotingStatuses()});
 };
 
 module.exports.getSpecificVotingStatus = (req, res, next) => {
-    res.status(200).json({status : VotingStatusesCache.getVotingStatusByCountryCode(req.params.countrycode)});
+    let record = schema.countryModel.records.findByPrimaryKey(req.params.countrycode);
+    res.status(200).json({status : record?.getValue("votingStatus")});
 };
 
 module.exports.getAllCountries = (req, res, next) => {
-    if (CountriesCache.isInitialized()) {
-        res.status(200).json({countries : CountriesCache.getCountries()});
-        return;
+    try {
+        res.status(200).json({countries : schema.countryModel.serializeForDisplay()});
     }
+    catch(e) {
+        res.status(404).json(ServerErrorResponse.handleGetAllError(e, modelName));
+    }
+};
 
-    CountryRequests.getAllCountriesSortedByRunningOrder()
-    .then(response => {
-        if (response.success) {
-            let countries = response.data;
-            CountriesCache.setCountries(countries);
-            
-            res.status(200).json({countries : countries});
-        }
-        else {
-            res.status(404).json(ErrorResponse.create(response.errorCode, "Judges", null).toJSON());
-        }
-    })
-    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
+module.exports.getAllCountriesWithVotes = (req, res, next) => {
+    try {
+        res.status(200).json({countries : schema.countryModel.serializeWithVotesForDisplay()});
+    }
+    catch(e) {
+        res.status(404).json(ServerErrorResponse.handleGetAllError(e, modelName));
+    }
 };
 
 module.exports.getSpecificCountry = (req, res, next) => {
     let code = req.params.code;
 
-    if (CountriesCache.isInitialized()) {
-        let country = CountriesCache.findCountry(code);
+    try {
+        let record = schema.countryModel.records.findByPrimaryKey(code);
 
-        if (code != null) {
-            res.status(200).json({country : country});
-            return;
-        }
-    }
-
-    CountryRequests.getSpecificCountry(code)
-    .then(response => {
-        if (response.success) {
-            res.status(200).json({country : response.data});
+        if (record != null) {
+            res.status(200).json({country : record.serializeForDisplay()});
         }
         else {
-            res.status(404).json(ErrorResponse.create(response.errorCode, "Country", code).toJSON());
+            res.status(404).json(ServerErrorResponse.createNotFoundOnGetError(modelName, code));
         }
-    })
-    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
+    }
+    catch(e) {
+        res.status(404).json(ServerErrorResponse.handleGetSpecificError(e, modelName, code));
+    }
+};
+
+module.exports.getSpecificCountryWithVotes = (req, res, next) => {
+    let code = req.params.code;
+
+    try {
+        let record = schema.countryModel.records.findByPrimaryKey(code);
+
+        if (record != null) {
+            let childRecords = record.getChildRecords(VotingSchema.FK_Country_Vote);
+            let childRecordsArray = [];
+            childRecords?.forEach(childRecord => childRecordsArray.push(childRecord.serializeForDisplay()));
+
+            let country = record.serializeForDisplay();
+            country.votes = childRecordsArray;
+
+            res.status(200).json({country : country});
+        }
+        else {
+            res.status(404).json(ServerErrorResponse.createNotFoundOnGetError(modelName, code));
+        }
+    }
+    catch(e) {
+        res.status(404).json(ServerErrorResponse.handleGetSpecificError(e, modelName, code));
+    }
 };
 
 module.exports.createNewCountry = (req, res, next) => {
-    CountryRequests.createNewCountry(req.body)
-    .then(response => {
-        if (response.success) {
-            CountriesCache.addCountry(req.body);
-            res.status(201).send();
-        }
-        else {
-            res.status(409).json(ErrorResponse.create(response.errorCode, "Country", req.body.code).toJSON());
-        }
-    })
-    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
+    ControllerUtils.createRecord(req, res, schema.countryModel);
 };
 
 module.exports.updateCountry = (req, res, next) => {
     let code = req.params.code;
 
-    CountryRequests.updateCountry(code, req.body)
-    .then(response => {
-        if (response.success) {
-            CountriesCache.updateCountry(code, req.body);
-            res.status(200).send();
-        }
-        else {
-            res.status(409).json(ErrorResponse.create(response.errorCode, "Country", code).toJSON());
-        }
-    })
-    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
+    ControllerUtils.updateRecord(req, res, schema.countryModel, code);
 };
 
-module.exports.updateJudgeVotes = (req, res, next) => {
+module.exports.checkJudgeOriginCountry = (req, res, next) => {
     let countryCode = req.params.countrycode;
     let judgeCode = req.params.judgecode;
-    let points = parseInt(req.body.points);
 
-    let isCountryJudgeOriginCountry = VerificationUtils.isCountryJudgeOriginCountry(countryCode, judgeCode);
+    try {
+        if (votingSchema.judgeModel.getJudgeOriginCountry(judgeCode) == countryCode) {
+            let code = "CANNOT_VOTE_ORIGIN_COUNTRY_ERROR";
+            let description = `Judge with code [${judgeCode}] cannot vote ones origin country [${countryCode}].`;
+            res.status(409).json(new ServerErrorResponse(code, description));
+            return;
+        }
 
-    if (isCountryJudgeOriginCountry) {
-        res.status(409).json(ErrorResponse.create("CANNOT_VOTE_ORIGIN_COUNTRY", "Judge", judgeCode).toJSON());
-        return;
+        next();
     }
+    catch(e) {
+        res.status(409).json(ServerErrorResponse.handleUpdateError(e, schema.voteModel.modelName, countryCode, judgeCode));
+    }
+}
 
-    CountryRequests.updateJudgeVotes(countryCode, judgeCode, points)
-    .then(response => {
-        if (response.success) {
-            res.status(200).send();
-            CountriesCache.setVotes(judgeCode, countryCode, points);
-            SocketIO.sendVote(judgeCode, countryCode, points, CountriesCache.getTotalVotes(countryCode));
-        }
-        else {
-            res.status(409).json(ErrorResponse.create(response.errorCode, "Country", countryCode).toJSON());
-        }
-    })
-    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
-};
-
-module.exports.clearCountryTotalVotes = (req, res, next) => {
+module.exports.clearCountryTotalVotes = async (req, res, next) => {
     let code = req.params.code;
 
-    let data = {votes : new Object(), totalVotes : 0};
+    try {
+        let records = votingSchema.voteModel.select(`countryCode = '${code}'`);
+    
+        if (records.length > 0) {
+            let parentRecord = records[0].getParentRecord(VotingSchema.FK_Country_Vote);
 
-    CountryRequests.updateCountry(code, data)
-    .then(response => {
-        if (response.success) {
-            CountriesCache.updateCountry(code, data);
-            res.status(200).send();
+            DAO.executeTransaction(async (session) => {
+                for (let record of records) {
+                    record.delete();
+                    let result = await record.saveChanges(session);
+                    if (!result.success) throw new Error(result.errorDescription);
+                }
+            })
+            .then(response => {
+                if (response.success) {
+
+                    if (parentRecord != null) {
+                        parentRecord.setValue("totalVotes", 0);
+                        parentRecord.acceptChanges();
+                    }
+
+                    records.forEach(record => record.acceptChanges());
+                    res.status(204).send();
+                }
+                else {
+                    records.forEach(record => record.rejectChanges());
+                    res.status(409).json(ServerErrorResponse.createDefUpdateError(response.errorDescription, modelName, code));
+                }
+            })
+            .catch((e) => {res.status(500).json(ServerErrorResponse.createServerError(e.message))});
         }
         else {
-            res.status(409).json(ErrorResponse.create(response.errorCode, "Country", code).toJSON());
+            res.status(204).send();
         }
-    })
-    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
+
+    }
+    catch(e) {
+        res.status(409).json(ServerErrorResponse.handleUpdateError(e, modelName, code));
+    }
+
+}
+
+module.exports.recalculateCountryTotalVotes = async (req, res, next) => {
+    let code = req.params.code;
+
+    try {
+        let records = votingSchema.voteModel.select(`countryCode = '${code}'`);
+    
+        if (records.length > 0) {
+            votingSchema.countryModel.totalVotesField.nonStored = false;
+
+            try {
+                let parentRecord = records[0].getParentRecord(VotingSchema.FK_Country_Vote);
+    
+                let totalVotes = 0;
+    
+                for (let record of records) {
+                    totalVotes += record.getValue("points");
+                }
+                
+                parentRecord.setValue("totalVotes", totalVotes);
+    
+                parentRecord.saveAndApplyChanges().then(response => {
+                    if (response.success) {
+                        res.status(204).send();
+                    }
+                    else {
+                        res.status(409).json(ServerErrorResponse.createDefUpdateError(response.errorDescription, modelName, code));
+                    }
+                })
+                .catch((e) => {res.status(500).json(ServerErrorResponse.createServerError(e.message))});
+            }
+            finally {
+                votingSchema.countryModel.totalVotesField.nonStored = true;
+            }
+        }
+        else {
+            let record = votingSchema.countryModel.records.findByPrimaryKey(code);
+
+            if (record != null) {
+                votingSchema.countryModel.totalVotesField.nonStored = false;
+
+                try {
+                    record.setValue("totalVotes", 0);
+
+                    record.saveAndApplyChanges().then(response => {
+                    if (response.success) {
+                        res.status(204).send();
+                    }
+                    else {
+                        res.status(409).json(ServerErrorResponse.createDefUpdateError(response.errorDescription, modelName, code));
+                    }
+                })
+                .catch((e) => {res.status(500).json(ServerErrorResponse.createServerError(e.message))});
+                }
+                finally {
+                    votingSchema.countryModel.totalVotesField.nonStored = true;
+                }
+            }
+            else {
+                res.status(204).send();
+            }
+        }
+
+    }
+    catch(e) {
+        res.status(409).json(ServerErrorResponse.handleUpdateError(e, modelName, code));
+    }
+    finally {
+        votingSchema.countryModel.totalVotesField.nonStored = true;
+    }
+
 }
 
 module.exports.deleteCountry = (req, res, next) => {
     let code = req.params.code;
 
-    CountryRequests.deleteCountry(code)
-    .then(response => {
-        if (response.success) {
-            CountriesCache.deleteCountry(code);
-            res.status(204).send();
-        }
-        else {
-            res.status(409).json(ErrorResponse.create(response.errorCode, "Country", code).toJSON());
-        }
-    })
-    .catch(e => {res.status(500).json(ErrorResponse.createServerErrorResponse(e.Message))});
+    ControllerUtils.deleteRecord(req, res, schema.countryModel, code);
 };
 
 module.exports.getWinnerCountry = (req, res, next) => {

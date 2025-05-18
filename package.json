@@ -1,7 +1,7 @@
 {
-  "name": "eurovisionvotingapp",
+  "name": "eurovisionvotingappserver",
   "version": "1.0.0",
-  "description": "eurovision voting app",
+  "description": "eurovision voting app server",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -15,12 +15,15 @@
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
+    "db-model-handler": "^1.0.2",
     "dotenv": "^16.4.1",
     "express": "^4.18.2",
     "lodash": "^4.17.21",
     "mongodb": "^5.5.0",
+    "nodemailer": "^6.10.1",
     "socket.io": "^4.7.2",
-    "util": "^0.12.5"
+    "util": "^0.12.5",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.3"

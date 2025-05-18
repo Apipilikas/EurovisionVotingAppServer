@@ -1,7 +1,7 @@
 const { Server } = require('socket.io');
-const util = require('util');
-const { SocketMappingCache, RunningCountryCache, VotingStatusesCache, CountriesCache, JudgesCache } = require('./cache');
-const { SocketIOResponse } = require('./utils/responses');
+const { SocketMappingCache } = require('./cache');
+const { SocketIOResponse } = require('./utils/responses/socketioResponse');
+const { votingSchema } = require('./schemas/votingSchema');
 
 var SocketIO = (
     function () {
@@ -19,50 +19,59 @@ var SocketIO = (
                 socket.emit("hi", "hello");
 
                 socket.on("connecting", (credentials) => {
-                    console.log("Connecting " + socket.id + " with judge code " + credentials.judgeCode);
-                    SocketMappingCache.addSocketID(socket.id, credentials.judgeCode);
+                    const judgeCode = credentials.judgeCode;
+                    console.log("Connecting " + socket.id + " with judge code " + judgeCode);
+                    SocketMappingCache.addSocketID(socket.id, judgeCode);
+
+                    let record = votingSchema.judgeModel.records.findByPrimaryKey(judgeCode);
+
+                    if (record != null) {
+                        record.setValue("online", true);
+                        record.acceptChanges();
+                    }
                 });
 
                 socket.on("disconnect", () => {
                     console.log("Disconnect " + socket.id);
-                    SocketMappingCache.removeSocketID(socket.id);
+                    let judgeCode = SocketMappingCache.removeSocketID(socket.id);
+
+                    let record = votingSchema.judgeModel.records.findByPrimaryKey(judgeCode);
+
+                    if (record != null) {
+                        record.setValue("online", false);
+                        record.acceptChanges();
+                    }
                 });                
 
                 socket.on("nextCountry", (nextRunningCountry) => {
+                    //  Check if is admin
                     let runningOrder = nextRunningCountry.runningCountry;
-                    RunningCountryCache.setRunningCountry(runningOrder);
+                    votingSchema.runningCountry = runningOrder;
                     
-                    let nextCountry = CountriesCache.findCountryByRunningOrder(runningOrder);
-                    VotingStatusesCache.setVotingStatuses([nextCountry.code], nextRunningCountry.votingStatus);
-                    nextRunningCountry.country = nextCountry;
-
-                    let data = {nextRunningCountry : nextRunningCountry};
-                    let response = SocketIOResponse.create(data, "Next country is %s", nextCountry.name);
-                    
-                    io.sockets.emit("nextCountry", response.toJSON());
+                    let countryRecord = votingSchema.countryModel.records.findByFieldName("runningOrder", runningOrder);
+                    if (countryRecord != null) {
+                        countryRecord.setValue("votingStatus", nextRunningCountry.votingStatus);
+    
+                        let data = {nextRunningCountry : countryRecord.serializeForDisplay()};
+                        let response = SocketIOResponse.create(data, "Next country is %s", countryRecord.getValue("name"));
+                        
+                        io.sockets.emit("nextCountry", response.toJSON());
+                    }
                 });
 
                 socket.on("votingStatus", (votingStatus) => {
-                    VotingStatusesCache.setVotingStatuses(votingStatus.countries, votingStatus.status);
-                    let messages = [];
-                    votingStatus.countries.forEach(countryCode => {
-                        let countryName = CountriesCache.findCountryNameByCode(countryCode);
-                        let status = votingStatus.status;
-
-                        let message = SocketIOResponse.createMessage("Voting status for %s is now %s", countryName, status);
-
-                        messages.push(message.toJSON());
-                    });
+                    let countryRecord = votingSchema.countryModel.records.findByPrimaryKey(votingStatus.countryCode);
+                    countryRecord.setValue("votingStatus", votingStatus.votingStatus);
+                    countryRecord.acceptChanges();
                     
-                    let data = {votingStatus : {countries : votingStatus.countries, status : votingStatus.status}};
-                    let response = new SocketIOResponse(data, messages, true);
+                    let data = {votingStatus : votingStatus.votingStatus, country : countryRecord.serializeForDisplay()};
+                    let response = SocketIOResponse.create(data, "Voting status for %s is now %s", countryRecord.getValue("name"), votingStatus.status);
 
                     socket.broadcast.emit("votingStatus", response.toJSON());
                 });
 
                 socket.on("general", (generalResponse) => {
-                    let data = {code : generalResponse.code};
-                    let response = SocketIOResponse.create(data, generalResponse.message);
+                    let response = SocketIOResponse.create(generalResponse, generalResponse.message);
                     
                     socket.broadcast.emit("general", response.toJSON());
                 });
@@ -78,11 +87,11 @@ var SocketIO = (
                 }
                 return ioInstance;
             },
-            sendVote: function(judgeCode, countryCode, points, totalVotes) {
-                let countryName = CountriesCache.findCountryNameByCode(countryCode);
-                let judgeName = JudgesCache.findJudgeNameByCode(judgeCode);
+            sendVote: function(judgeRecord, countryRecord, points) {
+                let countryName = countryRecord.getValue("name");
+                let judgeName = judgeRecord.getValue("name");
 
-                let data = {voting : {judgeCode: judgeCode, countryCode: countryCode, points: points, totalVotes : totalVotes}};
+                let data = {voting : {judge: judgeRecord.serializeForDisplay(), country: countryRecord.serializeForDisplay(), points: points}};
                 let response = SocketIOResponse.create(data, "%s has voted %s points for %s", judgeName, points, countryName);
 
                 this.getSocketIO().sockets.emit("votes", response.toJSON());
