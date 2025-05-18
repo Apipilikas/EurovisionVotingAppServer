@@ -14,6 +14,7 @@ class VotingSchema extends Schema {
     static FK_Policy_PolicyEntry = "FK_Policy_PolicyEntry"
 
     isDataFetched = false
+    dataLoading = null
     runningCountry = 0
     
     constructor() {
@@ -45,6 +46,14 @@ class VotingSchema extends Schema {
 
     async fetchData() {
         if (this.isDataFetched) return;
+        if (this.dataLoading == null) {
+            this.dataLoading = this.loadData();
+        }
+
+        return this.dataLoading;
+    }
+
+    async loadData() {
         for (let model of this.models) {
             let response = await model.dao.getAll();
             initDataToModel(model, response.data);
