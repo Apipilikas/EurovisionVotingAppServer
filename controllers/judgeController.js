@@ -62,17 +62,16 @@ module.exports.registerJudge = (req, res, next) => {
         let activationToken = UUIDUtils.generateUUID();
         record.addProperty(activationToken_ID, activationToken);
 
-        EmailProvider.sendActivateJudgeEmail(email, name, code, activationToken).then(response => {
-            if (response.success) {
-                res.status(201).send();
-            }
-            else {
-                res.status(404).json(ServerErrorResponse.createServerError(response.info));
-            }
-        })
-        return;
         record.saveAndApplyChanges().then(response => {
             if (response.success) {
+                EmailProvider.sendActivateJudgeEmail(email, name, code, activationToken).then(response => {
+                    if (response.success) {
+                        res.status(201).send();
+                    }
+                    else {
+                        res.status(404).json(ServerErrorResponse.createServerError(response.info));
+                    }
+                })
             }
             else {
                 res.status(409).json(ServerErrorResponse.createDefInsertError(response.errorDescription, modelName, name));

@@ -21,7 +21,7 @@ EmailProvider.sendEmail = function(email) {
     return new Promise((resolve) => {
         emailTransporter.sendMail(email, function(error, info) {
             if (error) {
-                resolve(EmailResponse.createFailureResponse(error.message));
+                resolve(EmailResponse.createFailureResponse(error));
             }
             else {
                 resolve(EmailResponse.createSuccessfulResponse(info.response));
