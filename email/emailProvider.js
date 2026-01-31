@@ -2,14 +2,12 @@ const nodemailer = require("nodemailer");
 const { EmailResponse } = require("../utils/responses/emailResponse");
 const { Email } = require("./email");
 
-let emailUser = process.env.EMAIL_USER;
-
 let emailTransporter = nodemailer.createTransport({
     host : "smtp.gmail.com",
     port : 587,
     secure : false,
     auth : {
-        user : emailUser,
+        user : process.env.EMAIL_USER,
         pass : process.env.EMAIL_APP_PASSWORD
     },
     tls : {
