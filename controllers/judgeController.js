@@ -65,7 +65,6 @@ module.exports.registerJudge = (req, res, next) => {
         record.saveAndApplyChanges().then(response => {
             if (response.success) {
                 EmailProvider.sendActivateJudgeEmail(email, name, code, activationToken).then(response => {
-                    console.log(JSON.stringify(response)); // REMOVE IT!
                     if (response.success) {
                         res.status(201).send();
                     }
