@@ -1,22 +1,11 @@
 const nodemailer = require("nodemailer");
 const { EmailResponse } = require("../utils/responses/emailResponse");
 const { Email } = require("./email");
+const { MailtrapTransport } = require("mailtrap");
 
-let emailTransporter = nodemailer.createTransport({
-    // host : "smtp.gmail.com",
-    service : "gmail",
-    port : 465,
-    secure : true,
-    auth : {
-        user : process.env.EMAIL_USER,
-        pass : process.env.EMAIL_APP_PASSWORD
-    },
-    tls : {
-        rejectUnauthorized : true
-    },
-    logger : true,
-    debug : true
-});
+let emailTransporter = nodemailer.createTransport(
+    MailtrapTransport({token : process.env.EMAIL_APP_PASSWORD})
+);
 
 let EmailProvider = {};
 
