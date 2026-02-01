@@ -1,11 +1,21 @@
 const nodemailer = require("nodemailer");
 const { EmailResponse } = require("../utils/responses/emailResponse");
 const { Email } = require("./email");
-const { MailtrapTransport } = require("mailtrap");
 
-let emailTransporter = nodemailer.createTransport(
-    MailtrapTransport({token : process.env.EMAIL_APP_PASSWORD})
-);
+let emailTransporter = nodemailer.createTransport({
+    host : "smtp.mailersend.net",
+    port : 587,
+    secure : false,
+    auth : {
+        user : process.env.EMAIL_USER,
+        pass : process.env.EMAIL_APP_PASSWORD
+    },
+    tls : {
+        rejectUnauthorized : false
+    },
+    logger : true,
+    debug : true
+});
 
 let EmailProvider = {};
 

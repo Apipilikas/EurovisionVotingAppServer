@@ -72,6 +72,7 @@ module.exports.registerJudge = (req, res, next) => {
                         res.status(404).json(ServerErrorResponse.createServerError(response.info));
                     }
                 })
+                .catch(e => {res.status(500).json(ServerErrorResponse.createServerError(e.message))});
             }
             else {
                 res.status(409).json(ServerErrorResponse.createDefInsertError(response.errorDescription, modelName, name));
