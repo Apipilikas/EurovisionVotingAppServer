@@ -1,40 +1,31 @@
 const nodemailer = require("nodemailer");
 const { EmailResponse } = require("../utils/responses/emailResponse");
 const { Email } = require("./email");
-
-let emailTransporter = nodemailer.createTransport({
-    host : "smtp.mailersend.net",
-    port : 587,
-    secure : false,
-    auth : {
-        user : process.env.EMAIL_USER,
-        pass : process.env.EMAIL_APP_PASSWORD
-    },
-    tls : {
-        rejectUnauthorized : false
-    },
-    logger : true,
-    debug : true
-});
+const { MailerSend, EmailParams, Sender, Recipient } = require("mailersend");
 
 let EmailProvider = {};
 
-EmailProvider.sendEmail = function(email) {
+EmailProvider.sendEmail = function(emailParams) {
+    const mailerSend = new MailerSend({
+        apiKey: process.env.EMAIL_APP_PASSWORD,
+    });
+
     return new Promise((resolve) => {
-        emailTransporter.sendMail(email, function(error, info) {
-            if (error) {
-                resolve(EmailResponse.createFailureResponse(error));
+        mailerSend.email.send(emailParams).then(response => {
+            if (response.statusCode >= 200 && response.statusCode < 300) {
+                resolve(EmailResponse.createSuccessfulResponse(response.body));
             }
             else {
-                resolve(EmailResponse.createSuccessfulResponse(info.response));
+                resolve(EmailResponse.createFailureResponse(response.body));
             }
         })
+        .catch(e => {resolve(EmailResponse.createFailureResponse(e.message))});
     })
 }
 
 EmailProvider.sendActivateJudgeEmail = function(judgeEmail, judgeName, judgeCode, activationToken) {
-    let email = Email.createActivateJudgeEmail(judgeEmail, judgeName, judgeCode, activationToken);
-    return EmailProvider.sendEmail(email);
+    let emailParams = Email.createActivateJudgeEmail(judgeEmail, judgeName, judgeCode, activationToken).toMailerSendParams();
+    return EmailProvider.sendEmail(emailParams);
 }
 
 module.exports = {EmailProvider};
