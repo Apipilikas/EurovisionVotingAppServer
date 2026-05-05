@@ -1,10 +1,10 @@
-const { getAllPolicies, createNewPolicy, updatePolicy, updatePolicyEntry, deletePolicy, deletePolicyEntry } = require('../controllers/policyController');
+const { getAllPolicies, createNewPolicy, updatePolicy, updatePolicyEntry, deletePolicy, deletePolicyEntry, getSpecificPolicy } = require('../controllers/policyController');
 
 const policyRouter = require('express').Router();
 
-policyRouter.get("/policies/all", getAllPolicies);
+policyRouter.get("/policies", getAllPolicies);
 
-policyRouter.post("/policies/specigic/:code", );
+policyRouter.get("/policies/:code", getSpecificPolicy);
 
 policyRouter.post("/policies", createNewPolicy);
 

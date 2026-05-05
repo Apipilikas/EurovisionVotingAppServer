@@ -36,12 +36,9 @@ class JudgeModel extends DAOModel {
     }
 
     createUniqueCode(judgeName = "") {
-        const maxPrefixLength = 2;
+        let uniqueID = UUIDUtils.generateUUID().substring(0, 5);
 
-        let prefixLength = Math.min(judgeName.length, maxPrefixLength);
-        let uniqueID = UUIDUtils.generateUUID().substring(0, 5 - prefixLength);
-
-        return judgeName.substring(0, prefixLength) + uniqueID;
+        return uniqueID;
     }
 }
 

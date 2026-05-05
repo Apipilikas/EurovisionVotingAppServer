@@ -4,14 +4,26 @@ const { ServerErrorResponse } = require("../utils/responses/serverErrorResponse"
 const { ControllerUtils } = require("../utils/controllerUtils");
 const { EmailProvider } = require("../email/emailProvider");
 const { UUIDUtils } = require("../utils/uuidUtils");
+const { QueryBuilder } = require("../utils/queryBuilder");
 
 let schema = votingSchema;
 let modelName = votingSchema.judgeModel.modelName;
 const activationToken_ID = "activationKey";
 
 module.exports.getAllJudges = (req, res, next) => {
+    let code = req.query.code;
+    let online = req.query.online;
+    let active = req.query.active;
     try {
-        res.status(200).json({judges : schema.judgeModel.serializeForDisplay()});
+        let query = new QueryBuilder().append("code", code)
+        .append("online", online)
+        .append("active", active)
+        .toString();
+        
+        let records = (query == "") ? schema.judgeModel.records : schema.judgeModel.select(query);
+        let serializedRecords = records.map(record => record.serializeForDisplay());
+        
+        res.status(200).json({judges : serializedRecords});
     }
     catch(e) {
         res.status(404).json(ServerErrorResponse.handleGetAllError(e, modelName));

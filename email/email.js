@@ -50,8 +50,8 @@ class Email {
         const content = template(data);
         let email = new Email(this.emailUser, judgeEmail, subject, content);
 
-        const imageFilePath = path.join(__dirname, "images", "eurovision-logo.png");
-        email.addEmbeddedImageAttachment("eurovision-logo.png", imageFilePath, "eurovision-logo");
+        const imageFilePath = path.join(__dirname, "images", "eurovision-logo.svg");
+        email.addEmbeddedImageAttachment("eurovision-logo.svg", imageFilePath, "eurovision-logo");
 
         return email;
     }
