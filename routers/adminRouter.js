@@ -5,7 +5,8 @@ const {
     resetAllCaches, 
     getAllOnlineJudges,
     setWinnerCountry,
-    clearWinnerCountry} = require('../controllers/adminController');
+    clearWinnerCountry,
+    getEurovisionEventData} = require('../controllers/adminController');
 const { ControllerUtils } = require('../utils/controllerUtils');
 
 adminRouter.all("/admin*", ControllerUtils.authorizeJudge);
@@ -21,5 +22,7 @@ adminRouter.post("/admin/winnerCountry", setWinnerCountry);
 adminRouter.post("/admin/winnerCountry/clear", clearWinnerCountry);
 
 adminRouter.get("/admin/onlineJudges/all", getAllOnlineJudges);
+
+adminRouter.get("/admin/eurovision/:eventName", getEurovisionEventData);
 
 module.exports = {adminRouter};

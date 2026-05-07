@@ -14,6 +14,7 @@
   "author": "Apipilikas",
   "license": "ISC",
   "dependencies": {
+    "cheerio": "^1.2.0",
     "cors": "^2.8.5",
     "db-model-handler": "^1.0.2",
     "dotenv": "^16.4.1",
