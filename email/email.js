@@ -3,6 +3,8 @@ const handlebars = require('handlebars');
 const path = require('path');
 const { EmailParams, Sender, Recipient, Attachment } = require("mailersend");
 
+const imagesPath = path.join(__dirname, "images");
+
 class Email {
 
     static emailUser = process.env.EMAIL_USER;
@@ -29,8 +31,9 @@ class Email {
         .setHtml(this.html);
     }
 
-    addEmbeddedImageAttachment(fileName, path, cid) {
-        this.attachments.push(new EmailAttachment(fileName, path, cid));
+    addEmbeddedImageAttachment(fileName, cid) {
+        const imagePath = path.join(imagesPath, fileName);
+        this.attachments.push(new EmailAttachment(fileName, imagePath, cid));
     }
 
     static createActivateJudgeEmail(judgeEmail, judgeName, judgeCode, activationToken) {
@@ -50,8 +53,10 @@ class Email {
         const content = template(data);
         let email = new Email(this.emailUser, judgeEmail, subject, content);
 
-        const imageFilePath = path.join(__dirname, "images", "eurovision-logo.svg");
-        email.addEmbeddedImageAttachment("eurovision-logo.svg", imageFilePath, "eurovision-logo");
+        const imagesPath = path.join(__dirname, "images");
+        email.addEmbeddedImageAttachment("eurovision-logo.svg", "eurovision-logo");
+        email.addEmbeddedImageAttachment("ferto-1.png", "ferto-1");
+        email.addEmbeddedImageAttachment("ferto-2.png", "ferto-2");
 
         return email;
     }

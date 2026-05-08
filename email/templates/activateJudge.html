@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Activate Judge Account</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Onest:wght@100..900&display=swap');
+
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: "Onest", 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             color: #333333; 
             margin: 0; 
             padding: 0; 
@@ -22,7 +24,9 @@
             overflow: hidden;
         }
 
-        .header { 
+        .header {
+            display: flex;
+            justify-content: space-between;
             background-color: #3f1c71; /* --seventh-color */
             padding: 25px; 
             text-align: center; 
@@ -75,13 +79,27 @@
 <body>
     <div class="container">
         <div class="header">
-            <!-- <h1 style="margin:0;">Eurovision 2026</h1> -->
-            <img src="cid:eurovision-logo" alt="Logo" width="200px">
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                <tr>
+                    <td text-align="left" valign="middle" width="33%">
+                        <!-- <img src="../images/ferto-1.png" alt="ferto-jump" height="105px"> -->
+                        <img src="cid:ferto-1" alt="ferto-jump" height="105px">
+                    </td>
+                    <td text-align="center" valign="middle" width="34%">
+                        <!-- <img src="../images/eurovision-logo.svg" alt="Logo" width="150px"> -->
+                        <img src="cid:eurovision-logo" alt="Logo" width="150px">
+                    </td>
+                    <td text-align="right" valign="middle" width="33%">
+                        <!-- <img src="../images/ferto-2.png" alt="ferto-love" height="100px"> -->
+                        <img src="cid:ferto-2" alt="ferto-love" height="100px">
+                    </td>
+                </tr>
+            </table>
         </div>
         <div class="content">
             <h2>Welcome to Eurovision Voting App 2026!</h2>
             <p>Dear {{judgeName}},</p>
-            <p>You have requested to join the app for <strong>Eurovision 2026</strong>. Please click the button below to complete your registration and activate your account.</p>
+            <p>You have requested to join the voting app for <strong>Eurovision 2026</strong>. Please click the button below to complete your registration and activate your account.</p>
             
             <div class="button-container">
                 <a href="{{clientUrl}}?judgeCode={{judgeCode}}&activationToken={{activationToken}}" class="button">Register</a>
