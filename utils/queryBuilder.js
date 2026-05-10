@@ -1,4 +1,4 @@
-export class QueryBuilder {
+class QueryBuilder {
     
     constructor() {
         this.statements = [];
@@ -16,3 +16,5 @@ export class QueryBuilder {
     }
 
 }
+
+module.exports = { QueryBuilder };

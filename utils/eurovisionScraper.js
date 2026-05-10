@@ -58,7 +58,7 @@ class EurovisionScraper {
     async scrapeEvent(eventName) {
         const url = EventMapper.get(eventName);
 
-        if (url == null) throw Error(`Event name [${eventName}] is not supported.`)
+        if (url == null) throw new Error(`Event name [${eventName}] is not supported.`)
 
         return await this.#scrapeEventData(eventName, url);
     }
