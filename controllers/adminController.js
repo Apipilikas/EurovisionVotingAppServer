@@ -1,4 +1,4 @@
-const { CountriesCache, SocketMappingCache } = require("../cache");
+const { CountriesCache, SocketMappingCache, EmailMappingCache } = require("../cache");
 const { votingSchema } = require("../schemas/votingSchema");
 const { EurovisionScraper } = require("../utils/eurovisionScraper");
 const { ServerErrorResponse } = require("../utils/responses/serverErrorResponse");
@@ -30,6 +30,7 @@ module.exports.resetVotingStatus = (req, res, next) => {
 module.exports.resetAllCaches = async (req, res, next) => {
     try {
         votingSchema.clearData();
+        EmailMappingCache.clearEmails();
         await votingSchema.fetchData();
 
         res.status(204).send();

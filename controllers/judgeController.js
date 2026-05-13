@@ -5,6 +5,7 @@ const { ControllerUtils } = require("../utils/controllerUtils");
 const { EmailProvider } = require("../email/emailProvider");
 const { UUIDUtils } = require("../utils/uuidUtils");
 const { QueryBuilder } = require("../utils/queryBuilder");
+const { EmailMappingCache } = require("../cache");
 
 let schema = votingSchema;
 let modelName = votingSchema.judgeModel.modelName;
@@ -68,6 +69,13 @@ module.exports.registerJudge = (req, res, next) => {
     try {
         let {name, email, originCountry} = req.body;
 
+        if (EmailMappingCache.emailExists(email)) {
+            let code = "EMAIL_ALREADY_SENT";
+            let description = `An email has already been sent in [${email}].`;
+            res.status(409).json(new ServerErrorResponse(code, description));
+            return;
+        }
+
         let code = votingSchema.judgeModel.createUniqueCode(name);
         let record = votingSchema.judgeModel.pushNewRecord(code, name, originCountry, false, false, null, false);
         
@@ -78,6 +86,7 @@ module.exports.registerJudge = (req, res, next) => {
             if (response.success) {
                 EmailProvider.sendActivateJudgeEmail(email, name, code, activationToken).then(response => {
                     if (response.success) {
+                        EmailMappingCache.addEmail(activationToken, email);
                         res.status(201).send();
                     }
                     else {
@@ -119,6 +128,7 @@ module.exports.activateJudge = (req, res, next) => {
 
                 record.saveAndApplyChanges().then(response => {
                     if (response.success) {
+                        EmailMappingCache.removeEmail(activationToken);
                         res.status(204).send();
                     }
                     else {
