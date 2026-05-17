@@ -1,6 +1,6 @@
 const judgeRouter = require('express').Router();
 const { 
-    getAllJudges, 
+    getAllJudges,
     getSpecificJudge, 
     createNewJudge, 
     updateJudge, 
@@ -13,13 +13,13 @@ const { VerificationUtils } = require('../utils/controllerUtils');
 
 judgeRouter.all("*", fetchVotingSchemaData);
 
-judgeRouter.get("/judges/all", getAllJudges);
+judgeRouter.get("/judges", getAllJudges);
 
-judgeRouter.get("/judges/specific/:code", getSpecificJudge);
+judgeRouter.get("/judges/:code", getSpecificJudge);
 
 judgeRouter.post("/judges", createNewJudge);
 
-judgeRouter.post("/judges/register/", registerJudge);
+judgeRouter.post("/judges/register", registerJudge);
 
 judgeRouter.patch("/judges/activate", activateJudge);
 

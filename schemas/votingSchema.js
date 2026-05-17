@@ -67,6 +67,7 @@ class VotingSchema extends Schema {
         }
 
         this.isDataFetched = false;
+        this.dataLoading = null;
     }
 }
 

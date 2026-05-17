@@ -1,30 +1,76 @@
+const fs = require('fs');
+const handlebars = require('handlebars');
+const path = require('path');
+const { EmailParams, Sender, Recipient, Attachment } = require("mailersend");
+
+const imagesPath = path.join(__dirname, "images");
+
 class Email {
 
     static emailUser = process.env.EMAIL_USER;
 
+    attachments = []
+
     constructor(from, to, subject, html) {
-        this.from = `ESCV 2025<${from}>`;
+        this.from = from;
         this.to = to;
         this.subject = subject;
         this.html = html;
     }
 
-    static createActivateJudgeEmail(judgeEmail, judgeName, judgeCode, activationToken) {
-        let subject = "Activate judge account"
-        let html = `<h2>Welcome to Eurovision Voting App 2025!</h2>
-                    <p>Dear ${judgeName},<br/>
-                    Please click on the link below to complete your registration.</p>
-                    <a href=${process.env.CLIENT_URL}?judgeCode=${judgeCode}&&activationToken=${activationToken}>Register</a>
-                    <h4>Thank you for registering!</h4>`
-        return new Email(this.emailUser, judgeEmail, subject, html);
+    toMailerSendParams() {
+        const sentFrom = new Sender(this.from);
+        const sentAttachments = this.attachments.map(attachment => attachment.toMailerSendParams());
+
+        return new EmailParams()
+        .setFrom(sentFrom)
+        .setTo([new Recipient(this.to)])
+        .setReplyTo(sentFrom)
+        .setAttachments(sentAttachments)
+        .setSubject(this.subject)
+        .setHtml(this.html);
     }
 
-    static createSuccessfulJudgeActivationEmail(to) {
-        let subject = "Judge activated successfully"
-        let html = `<h1>Great news!</h1>
-                    <p>You activated your account! No you can procceed on sign in
-                    through the register page or by clicking the link below</>
-                    <h3>Happy eurovision-voting!</h3>`
+    addEmbeddedImageAttachment(fileName, cid) {
+        const imagePath = path.join(imagesPath, fileName);
+        this.attachments.push(new EmailAttachment(fileName, imagePath, cid));
+    }
+
+    static createActivateJudgeEmail(judgeEmail, judgeName, judgeCode, activationToken) {
+        const subject = "Activate judge account";
+        const filePath = path.join(__dirname, "templates", "activateJudge.html");
+        const html = fs.readFileSync(filePath, "utf-8").toString();
+
+        const template = handlebars.compile(html);
+
+        const data = {
+            clientUrl : process.env.CLIENT_URL,
+            judgeName : judgeName,
+            judgeCode : judgeCode,
+            activationToken : activationToken
+        }
+
+        const content = template(data);
+        let email = new Email(this.emailUser, judgeEmail, subject, content);
+
+        email.addEmbeddedImageAttachment("eurovision-logo.svg", "eurovision-logo");
+        email.addEmbeddedImageAttachment("ferto-1.png", "ferto-1");
+        email.addEmbeddedImageAttachment("ferto-2.png", "ferto-2");
+
+        return email;
+    }
+}
+
+class EmailAttachment {
+    constructor(fileName, path, cid) {
+        this.fileName = fileName;
+        this.path = path;
+        this.cid = cid;
+    }
+
+    toMailerSendParams() {
+        const content = fs.readFileSync(this.path, {encoding: 'base64'});
+        return new Attachment(content, this.fileName, "inline", this.cid);
     }
 }
 

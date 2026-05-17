@@ -52,7 +52,8 @@ ControllerUtils.updateRecord = (req, res, model, ...codes) => {
         let record = model.records.findByPrimaryKey(...codes);
 
         if (record != null) {
-            record.mergeBySerialization(req.body);
+            let values = Record.getCorrectValuesOrderList(model, req.body)
+            record.loadData(...values);
 
             DAO.executeTransaction(async (session) => {
                 await record.saveAndApplyCascadeChanges(session);

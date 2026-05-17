@@ -5,11 +5,10 @@ const { CacheUtils } = require("./utils/cacheUtils");
 
 //#region Namespaces
 
-var RunningCountryCache = {};
 var CountriesCache = {};
-var JudgesCache = {};
 var VotingStatusesCache = {};
 var SocketMappingCache = {};
+var EmailMappingCache = {};
 
 //#endregion
 
@@ -21,45 +20,9 @@ let winnerCountry = null;
 let judges = [];
 let votingStatuses = [];
 let socketMapping = new Map();
+let emailMapping = new Map();
 
 //#endregion
-
-//#region Running Country
-
-/**
- * Sets running country's order.
- * @param {number} value 
- */
-RunningCountryCache.setRunningCountry = function(value) {
-    runningCountry = value;
-}
-
-/**
- * Gets running country's order.
- * @returns {number} Running country order
- */
-RunningCountryCache.getRunningCountry = function() {
-    return runningCountry;
-}
-
-/**
- * Gets running country's code.
- * @returns {string} Country's code
- */
-RunningCountryCache.getRunningCountryCode = function() {
-    return CountriesCache.findCountryCodeByRunningOrder(runningCountry);
-}
-
-/**
- * Resets running country's order.
- */
-RunningCountryCache.resetRunningCountry = function() {
-    runningCountry = 0;
-}
-
-//#endregion
-
-//#region Countries
 
 let isCountriesInitialized = false;
 
@@ -271,140 +234,6 @@ CountriesCache.clearWinnerCountry = function() {
 
 //#endregion
 
-// #region Judges
-
-let isJudgesInitialized = false;
-
-/**
- * Initializes judges cache.
- * @returns {Promise<boolean>} A promise with result true if initialization was completed successfully. Otherwise false.
- */
-JudgesCache.initJudges = async function() {
-        return JudgeRequests.getAllJudges()
-        .then(response => {
-            if (response.success) {
-                JudgesCache.fillJudges(response.data);
-                return true;
-            }
-            else return false;
-        })
-        .catch(e => {return false});
-}
-
-/**
- * Gets judges.
- * @returns {object[]} An array of the judges.
- */
-JudgesCache.getJudges = function() {
-    return judges;
-}
-
-/**
- * Sets judges.
- * @param {object[]} judgesData 
- */
-JudgesCache.setJudges = function(judgesData) {
-    if (judges.length == judgesData.length) return;
-
-    clearJudges();
-
-    JudgesCache.fillJudges(judgesData);
-}
-
-/**
- * Adds a new judge to array.
- * @param {object} judge The new judge object. 
- * @returns {boolean} True if addition was completed successfully. Otherwise, false.
- */
-JudgesCache.addJudge = function(judge) {
-    return CacheUtils.addEntry(judges, judge);
-}
-
-/**
- * Updates an existing judge.
- * @param {string} code Judge's code
- * @param {object} updatedJudge Updated judge's data
- * @returns {boolean} True if update was completed successfully. Otherwise, false.
- */
-JudgesCache.updateJudge = function(code, updatedJudge) {
-    return CacheUtils.updateEntry(judges, code, "code", updatedJudge);
-}
-
-/**
- * Gets judge that matches the given code.
- * @param {string} code Judge's code
- * @returns {object} A judge object. If judge was not found, returns null.
- */
-JudgesCache.findJudge = function(code) {
-    return CacheUtils.findEntry(judges, code, "code");
-}
-
-/**
- * Gets judge's name that matches the given code.
- * @param {string} code Judge's code
- * @returns {object} A judge object. If judge was not found, returns null.
- */
-JudgesCache.findJudgeNameByCode = function(code) {
-    let judge = CacheUtils.findEntry(judges, code, "code");
-    
-    if (judge == null) return null;
-    else return judge.name;
-}
-
-/**
- * Fills judge array. Given data are enriched with online/offline information.
- * @param {object[]} data 
- */
-JudgesCache.fillJudges = function(data) {
-    let onlineJudges = Array.from(socketMapping.values());
-
-    data.forEach(judge => {
-        let isOnline = false;
-        if (onlineJudges.includes(judge.code)) isOnline = true;
-        judge.online = isOnline;
-
-        CacheUtils.addEntry(judges, judge);
-    });
-
-    isJudgesInitialized = true;
-}
-
-/**
- * Resets judges cache meaning clearing out cache and initializing it.
- * @returns 
- */
-JudgesCache.resetJudges = function() {
-    clearJudges();
-    return JudgesCache.initJudges();
-}
-
-/**
- * Deletes a judge.
- * @param {string} code Judge's code
- * @returns {object} The deleted judge. If judge was not found, returns null.
- */
-JudgesCache.deleteJudge = function(code) {
-    return CacheUtils.deleteEntry(judges, code, "code");
-}
-
-/**
- * Clears out judges cache.
- */
-function clearJudges() {
-    judges = [];
-    isJudgesInitialized = false;
-}
-
-/**
- * Gets if judges cache has been initialized.
- * @returns {boolean} True if cache has been initialized. Otherwise, false.
- */
-JudgesCache.isInitialized = function() {
-    return isJudgesInitialized;
-}
-
-// #endregion
-
 //#region Voting Statuses
 
 /**
@@ -473,9 +302,6 @@ VotingStatusesCache.resetVotingStatuses = function() {
  */
 SocketMappingCache.addSocketID = function(socketID, judgeCode) {
     socketMapping.set(socketID, judgeCode);
-    
-    let judgeData = {online : true};
-    JudgesCache.updateJudge(judgeCode, judgeData);
     console.log(socketMapping)
 }
 
@@ -501,10 +327,30 @@ SocketMappingCache.getOnlineJudgeCodes = function() {
 
 //#endregion
 
+//#region Email mapping
+
+EmailMappingCache.emailExists = function(email) {
+    let emails = Array.from(emailMapping.values());
+    return emails.includes(email);
+}
+
+EmailMappingCache.addEmail = function(token, email) {
+    emailMapping.set(token, email);
+}
+
+EmailMappingCache.removeEmail = function(token) {
+    emailMapping.delete(token);
+}
+
+EmailMappingCache.clearEmails = function() {
+    emailMapping = new Map();
+}
+
+//#endregion
+
 module.exports = {
-    RunningCountryCache,
     CountriesCache,
-    JudgesCache,
     VotingStatusesCache,
-    SocketMappingCache
+    SocketMappingCache,
+    EmailMappingCache
 };

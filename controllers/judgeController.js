@@ -4,14 +4,27 @@ const { ServerErrorResponse } = require("../utils/responses/serverErrorResponse"
 const { ControllerUtils } = require("../utils/controllerUtils");
 const { EmailProvider } = require("../email/emailProvider");
 const { UUIDUtils } = require("../utils/uuidUtils");
+const { QueryBuilder } = require("../utils/queryBuilder");
+const { EmailMappingCache } = require("../cache");
 
 let schema = votingSchema;
 let modelName = votingSchema.judgeModel.modelName;
 const activationToken_ID = "activationKey";
 
 module.exports.getAllJudges = (req, res, next) => {
+    let code = req.query.code;
+    let online = req.query.online;
+    let active = req.query.active;
     try {
-        res.status(200).json({judges : schema.judgeModel.serializeForDisplay()});
+        let query = new QueryBuilder().append("code", code)
+        .append("online", online)
+        .append("active", active)
+        .toString();
+        
+        let records = (query == "") ? schema.judgeModel.records : schema.judgeModel.select(query);
+        let serializedRecords = records.map(record => record.serializeForDisplay());
+        
+        res.status(200).json({judges : serializedRecords});
     }
     catch(e) {
         res.status(404).json(ServerErrorResponse.handleGetAllError(e, modelName));
@@ -56,6 +69,13 @@ module.exports.registerJudge = (req, res, next) => {
     try {
         let {name, email, originCountry} = req.body;
 
+        if (EmailMappingCache.emailExists(email)) {
+            let code = "EMAIL_ALREADY_SENT";
+            let description = `An email has already been sent in [${email}].`;
+            res.status(409).json(new ServerErrorResponse(code, description));
+            return;
+        }
+
         let code = votingSchema.judgeModel.createUniqueCode(name);
         let record = votingSchema.judgeModel.pushNewRecord(code, name, originCountry, false, false, null, false);
         
@@ -66,12 +86,14 @@ module.exports.registerJudge = (req, res, next) => {
             if (response.success) {
                 EmailProvider.sendActivateJudgeEmail(email, name, code, activationToken).then(response => {
                     if (response.success) {
+                        EmailMappingCache.addEmail(activationToken, email);
                         res.status(201).send();
                     }
                     else {
                         res.status(404).json(ServerErrorResponse.createServerError(response.info));
                     }
                 })
+                .catch(e => {res.status(500).json(ServerErrorResponse.createServerError(e.message))});
             }
             else {
                 res.status(409).json(ServerErrorResponse.createDefInsertError(response.errorDescription, modelName, name));
@@ -80,7 +102,6 @@ module.exports.registerJudge = (req, res, next) => {
         .catch(e => {res.status(500).json(ServerErrorResponse.createServerError(e.message))})
     }
     catch (e) {
-        console.log(e)
         res.status(500).json(ServerErrorResponse.createServerError(e.message));
     }
 }
@@ -107,6 +128,7 @@ module.exports.activateJudge = (req, res, next) => {
 
                 record.saveAndApplyChanges().then(response => {
                     if (response.success) {
+                        EmailMappingCache.removeEmail(activationToken);
                         res.status(204).send();
                     }
                     else {
@@ -125,7 +147,7 @@ module.exports.activateJudge = (req, res, next) => {
         }
     }
     catch (e) {
-
+        res.status(500).json(ServerErrorResponse.createServerError(e.message));
     }
 
 }

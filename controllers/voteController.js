@@ -2,13 +2,26 @@ const { votingSchema, VotingSchema } = require("../schemas/votingSchema");
 const { SocketIO } = require("../socketio");
 const { ControllerUtils } = require("../utils/controllerUtils");
 const { VotesMapper, PolicyApplier } = require("../utils/policyApplier");
+const { QueryBuilder } = require("../utils/queryBuilder");
 const { ServerErrorResponse } = require("../utils/responses/serverErrorResponse");
 
 const modelName = votingSchema.voteModel.modelName;
 
 module.exports.getAllVotes = (req, res, next) => {
+    let countryCode = req.query.countryCode;
+    let judgeCode = req.query.judgeCode;
+    let points = req.query.points;
+
     try {
-        res.status(200).json({votes : votingSchema.voteModel.serializeForDisplay()});
+        let query = new QueryBuilder().append("countryCode", countryCode)
+                                      .append("judgeCode", judgeCode)
+                                      .append("points", points)
+                                      .toString();
+
+        let records = (query == "") ? votingSchema.voteModel.records : votingSchema.voteModel.select(query);
+        let serializedRecords = records.map(record => record.serializeForDisplay());
+
+        res.status(200).json({votes : serializedRecords});
     }
     catch(e) {
         res.status(404).json(ServerErrorResponse.handleGetAllError(e, modelName));
@@ -31,58 +44,6 @@ module.exports.getSpecificVote = (req, res, next) => {
     }
     catch(e) {
         res.status(404).json(ServerErrorResponse.handleGetSpecificError(e, modelName, countryCode, judgeCode));
-    }
-}
-
-module.exports.getVotesByJudge = (req, res, next) => {
-    let judgeCode = req.params.judgecode;
-
-    try {
-        let record = votingSchema.judgeModel.records.findByPrimaryKey(judgeCode);
-        
-        if (record != null) {
-            let childRecords = record.getChildRecords(VotingSchema.FK_Judge_Vote);
-
-            if (childRecords == null || childRecords.length == 0) {
-                res.status(404).json(ServerErrorResponse.createGetSpecificError(`No votes found for judge with code [${judgeCode}]`));
-            }
-            else {
-                let serializedRecords = childRecords.map(childRecord => childRecord.serializeForDisplay()); 
-                res.status(200).json({votes : serializedRecords});
-            }
-        }
-        else {
-            res.status(404).json(ServerErrorResponse.createNotFoundOnGetError(modelName, judgeCode));
-        }
-    }
-    catch(e) {
-        res.status(404).json(ServerErrorResponse.handleGetSpecificError(e, modelName, judgeCode));
-    }
-}
-
-module.exports.getVotesByCountry = (req, res, next) => {
-    let countryCode = req.params.countrycode;
-
-    try {
-        let record = votingSchema.countryModel.records.findByPrimaryKey(countryCode);
-        
-        if (record != null) {
-            let childRecords = record.getChildRecords(VotingSchema.FK_Country_Vote);
-
-            if (childRecords == null || childRecords.length == 0) {
-                res.status(404).json(ServerErrorResponse.createGetSpecificError(`No votes found for country with code [${countryCode}]`));
-            }
-            else {
-                let serializedRecords = childRecords.map(childRecord => childRecord.serializeForDisplay()); 
-                res.status(200).json({votes : serializedRecords});
-            }
-        }
-        else {
-            res.status(404).json(ServerErrorResponse.createNotFoundOnGetError(modelName, countryCode));
-        }
-    }
-    catch(e) {
-        res.status(404).json(ServerErrorResponse.handleGetSpecificError(e, modelName, countryCode));
     }
 }
 

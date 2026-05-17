@@ -1,5 +1,6 @@
-const { CountriesCache, SocketMappingCache } = require("../cache");
+const { CountriesCache, SocketMappingCache, EmailMappingCache } = require("../cache");
 const { votingSchema } = require("../schemas/votingSchema");
+const { EurovisionScraper } = require("../utils/eurovisionScraper");
 const { ServerErrorResponse } = require("../utils/responses/serverErrorResponse");
 
 
@@ -29,6 +30,7 @@ module.exports.resetVotingStatus = (req, res, next) => {
 module.exports.resetAllCaches = async (req, res, next) => {
     try {
         votingSchema.clearData();
+        EmailMappingCache.clearEmails();
         await votingSchema.fetchData();
 
         res.status(204).send();
@@ -52,4 +54,17 @@ module.exports.setWinnerCountry = (req, res, next) => {
 module.exports.clearWinnerCountry = (req, res, next) => {
     CountriesCache.clearWinnerCountry();
     res.status(200).send();
+}
+
+module.exports.getEurovisionEventData = async (req, res, next) => {
+    let eventName = req.params.eventName;
+
+    try {
+        let scraper = new EurovisionScraper();
+        let data = await scraper.scrapeEvent(eventName);
+        res.status(200).json(data);
+    }
+    catch(e) {
+        res.status(500).json(ServerErrorResponse.createServerError(e.message));
+    }
 }
