@@ -19,7 +19,8 @@ EmailProvider.sendEmail = function(emailParams) {
                 resolve(EmailResponse.createFailureResponse(response.body));
             }
         })
-        .catch(e => {resolve(EmailResponse.createFailureResponse(e.message))});
+        .catch(e => {
+            resolve(EmailResponse.createFailureResponse(e.body.message))});
     })
 }
 
